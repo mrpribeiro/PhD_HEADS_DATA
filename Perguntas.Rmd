@@ -1,0 +1,40 @@
+---
+title: "Perguntas"
+output: html_document
+date: "2025-09-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Impacto Geral da Poluição do Ar
+Qual é o número de mortes atribuíveis à poluição do ar (PM2.5, ozono, poluição doméstica) por país ou região?
+Qual é a carga de doença (DALYs) associada à poluição do ar ao longo do tempo?
+
+2. Doenças Respiratórias Específicas
+Qual é a contribuição da poluição do ar para doenças como:
+•	Doença Pulmonar Obstrutiva Crónica (DPOC)
+•	Asma
+•	Infeções respiratórias inferiores (ex: pneumonia)
+•	Cancro do pulmão
+
+3. Tendências Temporais
+Como evoluiu a carga de doenças respiratórias atribuíveis à poluição do ar entre 1990 e 2021?
+Houve melhorias em países com políticas ambientais mais rigorosas?
+
+4. Disparidades Regionais e Sociais
+Quais regiões têm maior carga de doenças respiratórias atribuíveis à poluição do ar?
+Existe correlação entre o Índice Sociodemográfico (SDI) e a carga de doença?
+Como variam os impactos por sexo e faixa etária?
+
+5. Fontes de Poluição
+Quais são os principais setores emissores (residencial, industrial, energia) que contribuem para a carga de PM2.5?
+Quantas mortes poderiam ser evitadas com a eliminação da combustão de combustíveis fósseis?
+
+6. Expectativa de Vida
+Qual é a perda de anos de vida esperada ao nascer devido à exposição à poluição do ar?
+
+7. Cenários de Mitigação
+Quais seriam os ganhos em saúde pública com a redução de emissões em diferentes cenários?
+Como diferentes políticas ambientais impactam a carga de doenças respiratórias?
