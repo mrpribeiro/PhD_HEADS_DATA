@@ -1,29 +1,73 @@
 ---
-title: "Trabalho"
-output: pdf_document
-date: "2025-09-30"
+title: "Análise da Poluição do Ar com Dados do GBD"
+author: "João Silva, Marco, Mariana"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    citation_package: default
+bibliography: referencias.bib
+csl: apa7.csl
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# Resumo
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Este trabalho analisa os impactos da poluição do ar na saúde pública utilizando 
+dados do Global Burden of Disease (GBD)[@bennitt_global_nodate]. Através de técnicas de preparação e 
+análise exploratória de dados (EDA), são identificadas tendências, padrões e 
+potenciais problemas de qualidade nos dados.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Introdução
 
-```{r cars}
-summary(cars)
-```
+A poluição do ar é um dos principais fatores de risco para doenças respiratórias 
+e cardiovasculares. Este estudo visa explorar os dados do GBD para compreender 
+melhor os efeitos da poluição do ar em diferentes países, faixas etárias e géneros.
 
-## Including Plots
+# Metodologia
 
-You can also embed plots, for example:
+## Fonte de Dados
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+- Dados extraídos do GBD 2021
+- Ferramenta utilizada: GBD Results Tool
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Preparação dos Dados
+
+- Seleção de colunas relevantes (e.g., país, ano, sexo, idade, medida, causa)
+- Tratamento de dados faltantes e outliers
+- Verificação de formatos e consistência
+
+## Ferramentas
+
+- Linguagem: R
+- Ambiente: RStudio
+- Pacotes: `tidyverse`, `ggplot2`, `dplyr`, `readr`, `knitr`, `rmarkdown`
+
+# Análise Exploratória dos Dados (EDA)
+
+## Distribuição por País e Ano
+
+## Diferenças por Sexo e Faixa Etária
+
+# Discussão
+
+*Interpretação dos resultados
+*Comparação com fontes externas (e.g., WHO, dados governamentais)
+*Limitações dos dados e da análise
+
+# Conclusão
+
+*Principais conclusões sobre o impacto da poluição do ar
+*Sugestões para futuras investigações
+
+# Referências
+
+
+
+# Anexos
+
+
