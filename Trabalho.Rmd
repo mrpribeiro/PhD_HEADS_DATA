@@ -34,12 +34,70 @@ melhor os efeitos da poluição do ar em diferentes países, faixas etárias e g
 
 - Dados extraídos do GBD 2021
 - Ferramenta utilizada: GBD Results Tool
+- Link da pesquisa: https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/c2a257eab66c4f3085ce54c40b651db1
+- Em termos de temas (features) temos:
+        *Fatores de risco (poluição e subdivisões e tabagismo)
+        *Causa (doenças respiratórias crónicas e suas subdivisões)
+        *Sexo
+        *Idade
+        *Locais (regiões who, continentes (?), SDI e sistemas de saúde)
+        *Anos (1990, 2000, 2010,2020 e 2021)
 
 ## Preparação dos Dados
 
 - Seleção de colunas relevantes (e.g., país, ano, sexo, idade, medida, causa)
 - Tratamento de dados faltantes e outliers
 - Verificação de formatos e consistência
+
+```{r,message=FALSE}
+library(dplyr)
+```
+
+```{r}
+#Importar os dados
+gbd_data <- read.csv("IHME-GBD_2021_DATA-11d67504-1.csv")
+gbd_data2 <- read.csv("IHME-GBD_2021_DATA-11d67504-2.csv")
+#Juntar as duas bases de dados
+gbd_total <- bind_rows(gbd_data, gbd_data2)
+#Sumário dos dados
+glimpse(gbd_total)
+```
+
+```{r}
+names(gbd_total)
+```
+
+```{r}
+# Devolve um vetor com todos os valores únicos (os nomes das categorias)
+measure_classes <- unique(gbd_total$measure)
+print(measure_classes)
+```
+
+```{r}
+location_classes <- unique(gbd_total$location)
+print(location_classes)
+```
+
+```{r}
+cause_classes <- unique(gbd_total$cause)
+print(cause_classes)
+```
+
+```{r}
+rei_classes <- unique(gbd_total$rei)
+print(rei_classes)
+```
+
+```{r}
+metric_classes <- unique(gbd_total$metric)
+print(metric_classes)
+```
+
+```{r}
+age_classes <- unique(gbd_total$age)
+print(age_classes)
+```
+
 
 ## Ferramentas
 
@@ -48,6 +106,8 @@ melhor os efeitos da poluição do ar em diferentes países, faixas etárias e g
 - Pacotes: `tidyverse`, `ggplot2`, `dplyr`, `readr`, `knitr`, `rmarkdown`
 
 # Análise Exploratória dos Dados (EDA)
+
+library(ggplot2)
 
 ## Distribuição por País e Ano
 
