@@ -1,6 +1,6 @@
 ---
 title: "Análise da Poluição do Ar com Dados do GBD"
-author: "João Silva, Marco, Mariana"
+author: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
