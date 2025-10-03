@@ -14,6 +14,7 @@
 library(readxl)
 library(dplyr)
 library(ggplot2)
+library(scales)
 
 # Read csv file (Import data)
 gbd_data_1 <- read.csv("IHME-GBD_2021_DATA-11d67504-1.csv")
@@ -69,3 +70,38 @@ View(table(df_all$sex))
 View(table(df_all$age))
 View(table(df_all$cause))
 View(table(df_all$rei))
+
+  # Total deaths worldwide by year:
+  # global_deaths <- subset(df_all, location == "Global" & measure == "Deaths" & metric == "Number")
+
+# Total deaths worldwide by risk factor as " Air pollution" by year:
+global_deaths <- subset(df_all, location == "Global" & measure == "Deaths" & rei == "Air pollution" & metric == "Number")
+# aggregate(val ~ year, global_deaths, sum) # summarize val (estimate, main value), sum by year
+
+# Another way to do it, more practical (put it in a variable)
+global_deaths_summary <- global_deaths %>%
+  group_by(year) %>%                # group the data by year
+  summarise(total_val = sum(val))   # sum the values for each year
+
+### This already answers half the 1. question: In 2021, 46772483 died due to air pollution, worldwide.
+
+# PLOT: "Global deaths attributable to air pollution (1990–2021)
+ggplot(global_deaths_summary, aes(x = year, y = total_val)) +
+  geom_line(color = "steelblue", size = 1.2) +   # line
+  geom_point(color = "darkred", size = 2) +      # points on the line
+  labs(title = "Global deaths attributable to air pollution (1990–2021)",
+       x = "Year",
+       y = "Total deaths") +
+  theme_minimal()
+
+# y with plain numbers instead of scientific ones
+# ggplot(global_deaths_summary, aes(x = year, y = total_val)) +
+#   geom_line(color = "darkred", size = 1.2) +
+#   geom_point(color = "yellow", size = 2) +
+#   labs(title = "Global deaths attributable to air pollution (1990–2021)",
+#        x = "Year",
+#        y = "Total deaths") +
+#   scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+#   theme_minimal()
+
+  
