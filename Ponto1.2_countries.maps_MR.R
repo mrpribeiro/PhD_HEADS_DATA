@@ -59,7 +59,7 @@ world$iso3 <- countrycode(world$name,
 
 
 # Check unmatched countries
-unmatched <- df_deaths_clean %>%
+unmatched <- df_deaths_clean_2021 %>%
   filter(!iso3 %in% world$iso3) %>% # Keep all countries whose ISO3 code is not in the world dataset.
   select(location, iso3)
 unmatched$location
@@ -80,7 +80,7 @@ world$iso3 <- countrycode(world$name,
                           destination = "iso3c")
 
 # Check unmatched countries AGAIN
-unmatched <- df_deaths_clean %>%
+unmatched <- df_deaths_clean_2021 %>%
   filter(!iso3 %in% world$iso3) %>%
   select(location)
 unmatched$location
@@ -97,8 +97,8 @@ world_data_1990 <- world %>%
 ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
-                       name = "Deaths per 100,000") +
-  labs(title = "Global Health Impact of Air Pollution in 2021",
+                       name = "Deaths/100k") +
+  labs(title = "Global health impact of air pollution in 2021",
        subtitle = "Death rates per 100,000 population",
        caption = "Data source: Global Burden of Disease") +
   theme_minimal() +
@@ -113,9 +113,9 @@ ggplot(data = world_data_2021) +
 ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
-                       name = "Deaths per 100,000") +
-  labs(title = "Global Health Impact of Air Pollution",
-       subtitle = "Death rates per 100,000 population in 1990",
+                       name = "Deaths/100k") +
+  labs(title = "Global health impact of air pollution in 1990",
+       subtitle = "Death rates per 100,000 population",
        caption = "Data source: Global Burden of Disease") +
   theme_minimal() +
   theme(
@@ -176,9 +176,9 @@ world_data_DALYs_1990 <- world %>%
 ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
-                       name = "DALYs per 100,000") +
-  labs(title = "Global Health Impact of Air Pollution",
-       subtitle = "DALYs rates per 100,000 population",
+                       name = "DALYs/100k") +
+  labs(title = "Global Health Impact of Air Pollution in 2021",
+       subtitle = "Disability-adjusted life years per 100,000 population",
        caption = "Data source: Global Burden of Disease") +
   theme_minimal() +
   theme(
@@ -192,9 +192,9 @@ ggplot(data = world_data_2021) +
 ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
-                       name = "DALYs per 100,000") +
-  labs(title = "Global Health Impact of Air Pollution",
-       subtitle = "DALYs rates per 100,000 population",
+                       name = "DALYs/100k") +
+  labs(title = "Global health impact of air pollution in 1990",
+       subtitle = "Disability-adjusted life years per 100,000 population",
        caption = "Data source: Global Burden of Disease") +
   theme_minimal() +
   theme(
@@ -230,42 +230,42 @@ top10_low_1990 <- df_deaths_clean_1990 %>%
 
 # Combine both into one table
 top10_high_table <- bind_rows(
-  top10_high_2021 %>% mutate(Category = "2021"),
-  top10_high_1990 %>% mutate(Category = "1990")
+  top10_high_2021 %>% mutate(year = "2021"),
+  top10_high_1990 %>% mutate(year = "1990")
 ) %>%
-  select(Category, location, val, upper, lower)
+  select(year, location, val, upper, lower)
 
 top10_low_table <- bind_rows(
-  top10_low_2021 %>% mutate(Category = "2021"),
-  top10_low_1990 %>% mutate(Category = "1990")
+  top10_low_2021 %>% mutate(year = "2021"),
+  top10_low_1990 %>% mutate(year = "1990")
 ) %>%
-  select(Category, location, val, upper, lower)
+  select(year, location, val, upper, lower)
 
-# Make sure Category is a factor so colors are consistent
-top10_high_table$Category <- factor(top10_high_table$Category, levels = c("1990", "2021"))
-top10_low_table$Category <- factor(top10_low_table$Category, levels = c("1990", "2021"))
+# Make sure year is a factor so colors are consistent
+top10_high_table$year <- factor(top10_high_table$year, levels = c("1990", "2021"))
+top10_low_table$year <- factor(top10_low_table$year, levels = c("1990", "2021"))
 
 #Loliplot HIGH
-ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = Category)) +
+ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year)) +
   geom_point(size = 4) +  # The "head" of the lollipop
   geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +  # The stick
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
   coord_flip() +
   scale_color_viridis(discrete = TRUE, option = "viridis") +
-  labs(x = "", y = "DEATHS",
-       title = "Top 10 Countries with Highest Air Pollution DEATH Rates (1990 vs 2021)") +
+  labs(x = "", y = "Deaths/100k",
+       title = "Top 10 countries with highest air pollution death rates (1990 vs 2021)") +
   theme_minimal()
 
 
 #Loliplot LOW
-ggplot(top10_low_table, aes(x = reorder(location, val), y = val, color = Category)) +
+ggplot(top10_low_table, aes(x = reorder(location, val), y = val, color = year)) +
   geom_point(size = 4) +
   geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
   coord_flip() +
   scale_color_manual(values = c("1990" = "#003f5c", "2021" = "#ffa600")) +  # darker colors
-  labs(x = "", y = "DEATHS",
-       title = "Top 10 Countries with Lowest Air Pollution DEATH Rates (1990 vs 2021)") +
+  labs(x = "", y = "Deaths/100k",
+       title = "Top 10 countries with lowest air pollution death rates (1990 vs 2021)") +
   theme_minimal()
 
 

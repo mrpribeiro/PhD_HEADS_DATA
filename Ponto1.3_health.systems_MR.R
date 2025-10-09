@@ -83,15 +83,15 @@ ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
   scale_y_continuous() +
   coord_flip() +
   labs(
-    title = "Deaths Rate Attributable to Air Pollution by Health System Type (2021)",
+    title = "Deaths rate attributable to air pollution by Health System type (2021)",
     x = "",
-    y = "Rate per 100,000",
-    caption = "Data Source: GBD 2021"
+    y = "Death/100k",
+    caption = "Data Source: Global Burden Disease 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold")
+    plot.title = element_text(face = "bold", size=12)
   )
 
 # DALYs
@@ -102,15 +102,15 @@ ggplot(df_dalys, aes(x = location, y = val, fill = location)) +
   scale_y_continuous() +
   coord_flip() +
   labs(
-    title = "DALYs Rate Attributable to Air Pollution by Health System Type (2021)",
+    title = "DALYs rate attributable to air pollution by Health System type (2021)",
     x = "",
-    y = "Rate per 100,000",
-    caption = "Data Source: GBD 2021"
+    y = "DALYs/100k",
+    caption = "Data Source: Global Burden Disease 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold")
+    plot.title = element_text(face = "bold", size=12)
   )
 
 ## General trend

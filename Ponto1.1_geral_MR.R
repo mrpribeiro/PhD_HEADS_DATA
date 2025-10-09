@@ -80,7 +80,12 @@ ggplot(global_deaths, aes(x = year, y = val)) +
   labs(title = "Deaths attributable to air pollution worldwide (1990–2021)",
        x = "Year",
        y = "Total no. of deaths") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    axis.title.x = element_text(size = 14),      # X-axis label size
+    axis.title.y = element_text(size = 14),      # Y-axis label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
+  )
 
 # PLOT: "DAILYs attributable to air pollution worldwide (1990–2021)
 ggplot(global_DAILYs, aes(x = year, y = val)) +
@@ -99,7 +104,13 @@ ggplot(global_DAILYs, aes(x = year, y = val)) +
   labs(title = "DAILYs attributable to air pollution worldwide (1990–2021)",
        x = "Year",
        y = "Total no. of DAILYs") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    axis.title.x = element_text(size = 14),      # X-axis label size
+    axis.title.y = element_text(size = 14),      # Y-axis label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
+  )
+
 
 
 # DEATHS vs DAILYs
@@ -112,7 +123,14 @@ ggplot(global_summary, aes(x = year, y = val)) +
   facet_wrap(~ measure, scales = "free_y") +
   labs(title = "Global Burden of Air Pollution (1990–2021)",
        x = "Year", y = "Total number") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    axis.title.x = element_text(size = 14),           # X-axis label size
+    axis.title.y = element_text(size = 14),           # Y-axis label size
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Main plot title
+    strip.text = element_text(size = 14, face = "bold")  # Facet titles
+  )
+
 
 
 ## DALYs
