@@ -9,6 +9,10 @@
 # install.packages("summarytools")
 # install.packages("ggplot2")
 # install.packages("dplyr")
+# install.packages("rnaturalearth")
+# install.packages("sf")
+# install.packages("viridis")
+# install.packages("countrycode")
 
 # Load packages
 library(readxl)
@@ -60,6 +64,7 @@ df_all$sex <- as.factor(df_all$sex)
 df_all$age <- as.factor(df_all$age)
 df_all$rei <- as.factor(df_all$rei)
 df_all$metric <- as.factor(df_all$metric)
+df_all$location <- as.factor(df_all$location)
 
 summary(df_all)
 
@@ -82,7 +87,10 @@ global_deaths <- subset(df_all, location == "Global" & measure == "Deaths" & rei
 # Another way to do it, more practical (put it in a variable)
 global_deaths_summary <- global_deaths %>%
   group_by(year) %>%                # group the data by year
-  summarise(total_val = sum(val))   # sum the values for each year
+  summarise(total_val = sum(val),  # sum the values for each year
+            total_upper = sum(upper),
+            total_lower = sum(lower)
+            )
 
 ### This already answers half the 1. question: In 2021, 46772483 died due to air pollution, worldwide.
 
@@ -90,6 +98,16 @@ global_deaths_summary <- global_deaths %>%
 ggplot(global_deaths_summary, aes(x = year, y = total_val)) +
   geom_line(color = "steelblue", size = 1.2) +   # line
   geom_point(color = "darkred", size = 2) +      # points on the line
+  labs(title = "Global deaths attributable to air pollution (1990–2021)",
+       x = "Year",
+       y = "Total deaths") +
+  theme_minimal()
+
+## PLOT WITH UNCERTAINITY VALUES (SHADED AREA)
+ggplot(global_deaths_summary, aes(x = year, y = total_val)) +
+  geom_ribbon(aes(ymin = total_lower, ymax = total_upper), fill = "lightblue", alpha = 0.3) +
+  geom_line(color = "steelblue", size = 1.2) +
+  geom_point(color = "darkred", size = 2) +
   labs(title = "Global deaths attributable to air pollution (1990–2021)",
        x = "Year",
        y = "Total deaths") +
@@ -285,4 +303,6 @@ ggplot(df_dalys, aes(x = location, y = total_val, fill = location)) +
   theme_minimal(base_size = 14) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+
+##########################################################################################
 unique(df_all$location)

@@ -1,12 +1,16 @@
-# Which countries experienced the highest health impact from air pollution? (2021)
+###################################################################################################
+# Which countries experienced the highest health (deaths/DALYs) impact from air pollution? (2021) #
+###################################################################################################
 
-#install.packages(c("rnaturalearth", "rnaturalearthdata", "sf", "ggplot2", "dplyr", "countrycode"))
+#install.packages(c("rnaturalearth", "rnaturalearthdata", "sf", "ggplot2", "dplyr", "countrycode", "viridis"))
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(sf)
 library(ggplot2)
 library(dplyr)
 library(countrycode)
+library(viridis)
+
 
 # Load GBD data
 gbd_data_2021 <- read.csv("IHME-GBD_2021_DATA-ce582a59-1.csv")
@@ -201,3 +205,67 @@ ggplot(data = world_data_1990) +
   )
 
 ###  ###
+########################################################################################################
+########################################################################################################
+
+
+# Top 10 highest
+top10_high_2021 <- df_deaths_clean_2021 %>%
+  arrange(desc(val)) %>%
+  slice_head(n = 10)
+
+top10_high_1990 <- df_deaths_clean_1990 %>%
+  arrange(desc(val)) %>%
+  slice_head(n = 10)
+
+
+# Top 10 lowest
+top10_low_2021 <- df_deaths_clean_2021 %>%
+  arrange(val) %>%
+  slice_head(n = 10)
+
+top10_low_1990 <- df_deaths_clean_1990 %>%
+  arrange(val) %>%
+  slice_head(n = 10)
+
+# Combine both into one table
+top10_high_table <- bind_rows(
+  top10_high_2021 %>% mutate(Category = "2021"),
+  top10_high_1990 %>% mutate(Category = "1990")
+) %>%
+  select(Category, location, val, upper, lower)
+
+top10_low_table <- bind_rows(
+  top10_low_2021 %>% mutate(Category = "2021"),
+  top10_low_1990 %>% mutate(Category = "1990")
+) %>%
+  select(Category, location, val, upper, lower)
+
+# Make sure Category is a factor so colors are consistent
+top10_high_table$Category <- factor(top10_high_table$Category, levels = c("1990", "2021"))
+top10_low_table$Category <- factor(top10_low_table$Category, levels = c("1990", "2021"))
+
+#Loliplot HIGH
+ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = Category)) +
+  geom_point(size = 4) +  # The "head" of the lollipop
+  geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +  # The stick
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  coord_flip() +
+  scale_color_viridis(discrete = TRUE, option = "viridis") +
+  labs(x = "", y = "DEATHS",
+       title = "Top 10 Countries with Highest Air Pollution DEATH Rates (1990 vs 2021)") +
+  theme_minimal()
+
+
+#Loliplot LOW
+ggplot(top10_low_table, aes(x = reorder(location, val), y = val, color = Category)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  coord_flip() +
+  scale_color_manual(values = c("1990" = "#003f5c", "2021" = "#ffa600")) +  # darker colors
+  labs(x = "", y = "DEATHS",
+       title = "Top 10 Countries with Lowest Air Pollution DEATH Rates (1990 vs 2021)") +
+  theme_minimal()
+
+
