@@ -47,10 +47,25 @@ select(measure, year, val, upper, lower)
 
 ##### In 2021, aproximatelly 8 million people died due to air pollution, worldwide.
 
-# Total DAILYs worldwide by year:
-global_DAILYs <- gbd_data %>%
+# Total DALYs worldwide by year:
+global_DALYs <- gbd_data %>%
   filter(
     measure == "DALYs (Disability-Adjusted Life Years)",
+    location == "Global",
+    rei == "Air pollution",
+    metric == "Number",
+    cause == "All causes",
+    age == "All ages",
+    sex == "Both"
+  ) %>%
+  select(measure, year, val, upper, lower)
+
+# Total DALYs/YLLs/YLDs worldwide by year:
+global_DALYsYLLsYLDs<- gbd_data %>%
+  filter(
+    measure %in% c("DALYs (Disability-Adjusted Life Years)",
+                   "YLDs (Years Lived with Disability)",
+                   "YLLs (Years of Life Lost)"),
     location == "Global",
     rei == "Air pollution",
     metric == "Number",
@@ -87,8 +102,8 @@ ggplot(global_deaths, aes(x = year, y = val)) +
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
   )
 
-# PLOT: "DAILYs attributable to air pollution worldwide (1990–2021)
-ggplot(global_DAILYs, aes(x = year, y = val)) +
+# PLOT: "DALYs attributable to air pollution worldwide (1990–2021)
+ggplot(global_DALYs, aes(x = year, y = val)) +
   geom_line(color = "black", size = 1.2) +   # line
   geom_point(color = "orange", size = 2) +      # points on the line
   labs(title = "DAILYs attributable to air pollution worldwide (1990–2021)",
@@ -96,8 +111,8 @@ ggplot(global_DAILYs, aes(x = year, y = val)) +
        y = "Total no. of DAILYs") +
   theme_minimal()
 
-## PLOT: "DAILYs attributable to air pollution worldwide (1990–2021) WITH UNCERTAINITY VALUES (SHADED AREA)
-ggplot(global_DAILYs, aes(x = year, y = val)) +
+## PLOT: "DALYs attributable to air pollution worldwide (1990–2021) WITH UNCERTAINITY VALUES (SHADED AREA)
+ggplot(global_DALYs, aes(x = year, y = val)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), fill = "lightgrey", alpha = 0.3) +
   geom_line(color = "black", size = 1.2) +
   geom_point(color = "orange", size = 2) +
@@ -111,9 +126,28 @@ ggplot(global_DAILYs, aes(x = year, y = val)) +
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
   )
 
+# Plot DALYsYLLsYLDs
+ggplot(global_DALYsYLLsYLDs, aes(x = year, y = val, color = measure, fill = measure)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  labs(
+    title = "DALYs, YLLs, and YLDs attributable to air pollution worldwide (1990–2021)",
+    x = "Year",
+    y = "Total no.",
+    color = "Measure",
+    fill = "Measure"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_text(size = 11),
+    axis.title.y = element_text(size = 11),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8)
+  )
 
-
-# DEATHS vs DAILYs
+# DEATHS vs DALYs
 global_summary <- rbind (global_DAILYs, global_deaths)
 
 ggplot(global_summary, aes(x = year, y = val)) +

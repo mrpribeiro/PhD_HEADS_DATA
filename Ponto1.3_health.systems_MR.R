@@ -79,6 +79,8 @@ df_dalys  <- df_healthsystems %>% filter(measure == "DALYs (Disability-Adjusted 
 ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
+  geom_text(aes(label = round(val, 0)), 
+            hjust = -0.2, vjust = -0.4,size = 4) +
   scale_fill_manual(values = pal) +
   scale_y_continuous() +
   coord_flip() +
@@ -98,6 +100,8 @@ ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
 ggplot(df_dalys, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
+  geom_text(aes(label = round(val, 0)), 
+            hjust = -0.2, vjust = -1,size = 4) +
   scale_fill_manual(values = pal) +
   scale_y_continuous() +
   coord_flip() +

@@ -254,11 +254,14 @@ ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year))
   scale_color_viridis(discrete = TRUE, option = "viridis") +
   labs(x = "", y = "Deaths/100k",
        title = "Top 10 countries with highest air pollution death rates (1990 vs 2021)") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 12, hjust = 1, lineheight = 1.1)
+  )
 
 
 #Loliplot LOW
-ggplot(top10_low_table, aes(x = reorder(location, val), y = val, color = year)) +
+ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year)) +
   geom_point(size = 4) +
   geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
@@ -266,6 +269,10 @@ ggplot(top10_low_table, aes(x = reorder(location, val), y = val, color = year)) 
   scale_color_manual(values = c("1990" = "#003f5c", "2021" = "#ffa600")) +  # darker colors
   labs(x = "", y = "Deaths/100k",
        title = "Top 10 countries with lowest air pollution death rates (1990 vs 2021)") +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold", size = 12, hjust = 0.5, lineheight = 1.1)
+    
+  )
 
 
