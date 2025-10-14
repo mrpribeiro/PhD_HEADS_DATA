@@ -103,7 +103,7 @@ gbd_data10 <- read.csv("IHME-GBD_2021_DATA-ce582a59-1.csv")
 gbd_data11 <- read.csv("IHME-GBD_2021_DATA-382c4db5-1.csv")
 #Juntar as bases de dados
 gbd_total <- bind_rows(gbd_data, gbd_data2,gbd_data3,gbd_data4,gbd_data5,gbd_data6,
-                       gbd_data7,gbd_data8,gbd_data9,gbd_data10,gbd_data11)
+        gbd_data7,gbd_data8,gbd_data9,gbd_data10,gbd_data11)
 #Mudar para um formato mais tidy
 gbd_total_wide <- gbd_total %>%
         pivot_wider(
@@ -112,15 +112,18 @@ gbd_total_wide <- gbd_total %>%
                 names_sep = "_",
                 names_vary = "slowest"
   )
+```
+
+```{r}
 #Sumário dos dados
 glimpse(gbd_total)
 ```
 
 
 ```{r}
-# Converter colunas para fator
+# Converter colunas para factor
 gbd_total <- gbd_total %>%
-  mutate(across(c(measure, location, sex, age, cause, rei, metric), as.factor))
+        mutate(across(c(measure, location, sex, age, cause, rei, metric), as.factor))
 ```
 
 
@@ -132,34 +135,27 @@ names(gbd_total)
 ```{r}
 # Devolve um vetor com todos os valores únicos (os nomes das categorias)
 measure_classes <- unique(gbd_total$measure)
-print(measure_classes)
-```
-
-```{r}
 location_classes <- unique(gbd_total$location)
-print(location_classes)
-```
-
-```{r}
-cause_classes <- unique(gbd_total$cause)
-print(cause_classes)
-```
-
-```{r}
-rei_classes <- unique(gbd_total$rei)
-print(rei_classes)
-```
-
-```{r}
-metric_classes <- unique(gbd_total$metric)
-print(metric_classes)
-```
-
-```{r}
+sex_classes <- unique(gbd_total$sex)
 age_classes <- unique(gbd_total$age)
-print(age_classes)
+cause_classes <- unique(gbd_total$cause)
+rei_classes <- unique(gbd_total$rei)
+metric_classes <- unique(gbd_total$metric)
+year_classes <- unique(gbd_total$year)
+# Criar uma lista com todas as variáveis
+classes_list <- list(
+        measure = measure_classes,
+        location = location_classes,
+        sex = sex_classes,
+        age = age_classes,
+        cause = cause_classes,
+        rei = rei_classes,
+        metric = metric_classes,
+        year = year_classes
+)
+# Ver a estrutura da lista de modo a ficar mais compacto.
+str(classes_list)
 ```
-
 
 ## Ferramentas
 
@@ -180,10 +176,15 @@ print(age_classes)
 ### Quais regiões têm maior carga de doenças respiratórias atribuíveis à poluição do ar?
 
 ```{r}
-# Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- subset(gbd_total, measure == "Deaths" & sex == "Both" & 
-        age == "Age-standardized" & cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & metric == "Rate" & year == "2021")
+# Filtrar linhas
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
+        sex == "Both" & 
+        age == "Age-standardized" & 
+        cause == "Chronic respiratory diseases" & 
+        rei == "Air pollution" & 
+        metric == "Rate" & 
+        year == "2021")
 # Ordenar as regiões por valor
 gbd_filtered<-mutate(gbd_filtered,location = fct_reorder(location, val))
 # Fazer Barplot
@@ -196,6 +197,7 @@ ggplot(data = gbd_filtered, aes(x = location, y = val)) +
                 x = "Local", y = "Taxa") +
         theme_minimal()
 ```
+
 ```{r}
 # Filtrar linhas
 gbd_deaths <- gbd_total %>% filter(
@@ -252,10 +254,15 @@ cbind(
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- subset(gbd_total, measure == "Deaths" & 
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
         location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-        sex == "Both" & age == "Age-standardized" & cause == "All causes" & 
-        rei == "Air pollution" & metric == "Rate" & year == "2021")
+        sex == "Both" & 
+        age == "Age-standardized" & 
+        cause == "All causes" & 
+        rei == "Air pollution" & 
+        metric == "Rate" & 
+        year == "2021")
 # Fazer Barplot
 ggplot(data = gbd_filtered, aes(x = factor(location,
                 levels = c("Low SDI", "Low-middle SDI", "Middle SDI","High-middle SDI", "High SDI")), 
@@ -270,12 +277,17 @@ ggplot(data = gbd_filtered, aes(x = factor(location,
                 x = "Local", y = "Taxa") +
         theme_minimal()
 ```
+
 ```{r}
 # Filtrar linhas
-gbd_filtered <- subset(gbd_total, measure == "Deaths" & 
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
         location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-        sex == "Both" & age == "Age-standardized" & cause == "All causes" & 
-        rei == "Air pollution" & metric == "Rate")
+        sex == "Both" & 
+        age == "Age-standardized" & 
+        cause == "All causes" & 
+        rei == "Air pollution" & 
+        metric == "Rate")
 # Fazer Barplot
 ggplot(data = gbd_filtered, aes(x = year, 
                 y = val,color=factor(location,
@@ -294,7 +306,8 @@ ggplot(data = gbd_filtered, aes(x = year,
 
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- subset(gbd_total, measure == "Deaths" & 
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
         location == "Global" & 
         sex == "Both" & 
         !age %in% c("All ages", "7-27 days", "Age-standardized") &
@@ -314,7 +327,8 @@ ggplot(data = gbd_filtered, aes(x = age, y = val)) +
 
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- subset(gbd_total, measure == "Deaths" & 
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
         location == "Global" & 
         sex %in% c("Male", "Female") &
         !age %in% c("All ages", "7-27 days", "Age-standardized") &
@@ -336,15 +350,15 @@ ggplot(data = gbd_filtered, aes(x = age, y = val, fill = sex)) +  # Adicionado f
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% 
-        filter(measure == "Deaths" & 
-                location == "Global" & 
-                sex %in% c("Male", "Female") &
-                age %in% c("Age-standardized") &
-                cause == "All causes" & 
-                !rei %in% c("Air pollution","All risk factors","Particulate matter pollution") & 
-                metric == "Rate") %>%
-        mutate(year = factor(year, levels = c(1990, 2000, 2010, 2020, 2021)))
+gbd_filtered <- gbd_total %>% filter(
+        measure == "Deaths" & 
+        location == "Global" & 
+        sex %in% c("Male", "Female") &
+        age %in% c("Age-standardized") &
+        cause == "All causes" & 
+        !rei %in% c("Air pollution","All risk factors","Particulate matter pollution") & 
+        metric == "Rate") %>%
+                mutate(year = factor(year, levels = c(1990, 2000, 2010, 2020, 2021)))
 # Fazer Barplot
 ggplot(data = gbd_filtered, aes(x = year, y = val, fill = rei)) +
         geom_bar(stat = "identity", width = 0.7, position = position_dodge(width = 0.8)) +  # position_dodge para barras lado a lado
