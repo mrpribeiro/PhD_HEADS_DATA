@@ -78,15 +78,6 @@ global_DALYsYLLsYLDs<- gbd_data %>%
 ### In 2021, air pollution caused an estimated 236 million DALYs globally.
 ### That means roughly 236 million years of healthy life were lost across the global population due to disease and early death linked to air pollution — a huge public-health burden.
 
-# PLOT: "Deaths attributable to air pollution worldwide (1990–2021)
-ggplot(global_deaths, aes(x = year, y = val)) +
-  geom_line(color = "steelblue", size = 1.2) +   # line
-  geom_point(color = "darkred", size = 2) +      # points on the line
-  labs(title = "Deaths attributable to air pollution worldwide (1990–2021)",
-       x = "Year",
-       y = "Total no. of deaths") +
-  theme_minimal()
-
 ## PLOT: "Deaths attributable to air pollution worldwide (1990–2021) WITH UNCERTAINITY VALUES (SHADED AREA)
 ggplot(global_deaths, aes(x = year, y = val)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), fill = "lightblue", alpha = 0.3) +
@@ -94,36 +85,30 @@ ggplot(global_deaths, aes(x = year, y = val)) +
   geom_point(color = "darkred", size = 2) +
   labs(title = "Deaths attributable to air pollution worldwide (1990–2021)",
        x = "Year",
-       y = "Total no. of deaths") +
+       y = "Total no. of deaths",
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal() +
   theme(
-    axis.title.x = element_text(size = 14),      # X-axis label size
-    axis.title.y = element_text(size = 14),      # Y-axis label size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
+    axis.title.x = element_text(size = 16),      # X-axis label size
+    axis.title.y = element_text(size = 16),      # Y-axis label size
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5)  # Title size, bold, centered
   )
-
-# PLOT: "DALYs attributable to air pollution worldwide (1990–2021)
-ggplot(global_DALYs, aes(x = year, y = val)) +
-  geom_line(color = "black", size = 1.2) +   # line
-  geom_point(color = "orange", size = 2) +      # points on the line
-  labs(title = "DAILYs attributable to air pollution worldwide (1990–2021)",
-       x = "Year",
-       y = "Total no. of DAILYs") +
-  theme_minimal()
 
 ## PLOT: "DALYs attributable to air pollution worldwide (1990–2021) WITH UNCERTAINITY VALUES (SHADED AREA)
 ggplot(global_DALYs, aes(x = year, y = val)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), fill = "lightgrey", alpha = 0.3) +
   geom_line(color = "black", size = 1.2) +
   geom_point(color = "orange", size = 2) +
-  labs(title = "DAILYs attributable to air pollution worldwide (1990–2021)",
+  labs(title = "DALYs attributable to air pollution worldwide (1990–2021)",
        x = "Year",
-       y = "Total no. of DAILYs") +
+       y = "Total no. of DALYs",
+       caption = "Data Source: Global Burden of Disease 2021"
+       ) +
   theme_minimal() +
   theme(
-    axis.title.x = element_text(size = 14),      # X-axis label size
-    axis.title.y = element_text(size = 14),      # Y-axis label size
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5)  # Title size, bold, centered
+    axis.title.x = element_text(size = 16),      # X-axis label size
+    axis.title.y = element_text(size = 16),      # Y-axis label size
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5)  # Title size, bold, centered
   )
 
 # Plot DALYsYLLsYLDs
@@ -148,7 +133,7 @@ ggplot(global_DALYsYLLsYLDs, aes(x = year, y = val, color = measure, fill = meas
   )
 
 # DEATHS vs DALYs
-global_summary <- rbind (global_DAILYs, global_deaths)
+global_summary <- rbind (global_DALYs, global_deaths)
 
 ggplot(global_summary, aes(x = year, y = val)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), fill = "lightblue", alpha = 0.3) +
@@ -165,7 +150,51 @@ ggplot(global_summary, aes(x = year, y = val)) +
     strip.text = element_text(size = 14, face = "bold")  # Facet titles
   )
 
+# Combine the four metrics into one dataset
+global_summary_all <- gbd_data %>%
+  filter(
+    measure %in% c("Deaths",
+                   "DALYs (Disability-Adjusted Life Years)",
+                   "YLLs (Years of Life Lost)",
+                   "YLDs (Years Lived with Disability)"),
+    location == "Global",
+    rei == "Air pollution",
+    metric == "Number",
+    cause == "All causes",
+    age == "All ages",
+    sex == "Both"
+  ) %>%
+  select(measure, year, val, upper, lower)
 
+global_summary_all$measure <- factor(global_summary_all$measure,
+                                     levels = c("Deaths",
+                                                "DALYs (Disability-Adjusted Life Years)",
+                                                "YLLs (Years of Life Lost)",
+                                                "YLDs (Years Lived with Disability)")
+)
+
+# Plot all four metrics with facets
+ggplot(global_summary_all, aes(x = year, y = val, color = measure, fill = measure)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  facet_wrap(~ measure, scales = "free_y") +
+  labs(
+    title = "Global burden attributable to air pollution (1990–2021)",
+    x = "Year",
+    y = "Total number",
+    color = "Measure",
+    fill = "Measure",
+    caption = "Data Source: Global Burden of Disease 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_text(size = 13),
+    axis.title.y = element_text(size = 13),
+    plot.title = element_text(size = 16, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold"),
+    legend.position = "none"  # remove legend since it's already clear in facets
+  )
 
 ## DALYs
 # 

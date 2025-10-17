@@ -92,37 +92,39 @@ world_data_2021 <- world %>%
 world_data_1990 <- world %>%
   left_join(df_deaths_clean_1990, by = "iso3")
 
+# Determine the common range across both datasets
+fill_limits <- range(c(world_data_1990$val, world_data_2021$val), na.rm = TRUE)
 
 # Plot DEATHS 2021
 ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
-                       name = "Deaths/100k") +
+                       name = "Deaths/100k", limits = fill_limits) +
   labs(title = "Global health impact of air pollution in 2021",
        subtitle = "Death rates per 100,000 population",
-       caption = "Data source: Global Burden of Disease") +
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8)
+    plot.title = element_text(size = 20, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
   )
 
 # Plot DEATHS 1990
 ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
-                       name = "Deaths/100k") +
+                       name = "Deaths/100k", limits = fill_limits) +
   labs(title = "Global health impact of air pollution in 1990",
        subtitle = "Death rates per 100,000 population",
-       caption = "Data source: Global Burden of Disease") +
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8)
+    plot.title = element_text(size = 20, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
   )
 
 ###  ###
@@ -172,36 +174,39 @@ world_data_DALYs_2021 <- world %>%
 world_data_DALYs_1990 <- world %>%
   left_join(df_DALYS_clean_1990, by = "iso3")
 
+# Determine the common range across both datasets
+fill_limits_dalys <- range(c(world_data_DALYs_1990$val, world_data_DALYs_2021$val), na.rm = TRUE)
+
 # Plot DALYS 2021
 ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
-                       name = "DALYs/100k") +
-  labs(title = "Global Health Impact of Air Pollution in 2021",
+                       name = "DALYs/100k", limits = fill_limits) +
+  labs(title = "Global health impact of air pollution in 2021",
        subtitle = "Disability-adjusted life years per 100,000 population",
-       caption = "Data source: Global Burden of Disease") +
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8)
+    plot.title = element_text(size = 20, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
   )
 
 # Plot DALYS 1990
 ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
-                       name = "DALYs/100k") +
+                       name = "DALYs/100k", limits = fill_limits) +
   labs(title = "Global health impact of air pollution in 1990",
        subtitle = "Disability-adjusted life years per 100,000 population",
-       caption = "Data source: Global Burden of Disease") +
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8)
+    plot.title = element_text(size = 20, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
   )
 
 ###  ###
@@ -253,10 +258,11 @@ ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year))
   coord_flip() +
   scale_color_viridis(discrete = TRUE, option = "viridis") +
   labs(x = "", y = "Deaths/100k",
-       title = "Top 10 countries with highest air pollution death rates (1990 vs 2021)") +
+       title = "Top 10 countries with highest air pollution death rates (1990 vs 2021)",
+       caption = "Data Source: Global Burden of Disease 2021")+
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold", size = 12, hjust = 1, lineheight = 1.1)
+    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1)
   )
 
 
@@ -268,10 +274,11 @@ ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year))
   coord_flip() +
   scale_color_manual(values = c("1990" = "#003f5c", "2021" = "#ffa600")) +  # darker colors
   labs(x = "", y = "Deaths/100k",
-       title = "Top 10 countries with lowest air pollution death rates (1990 vs 2021)") +
+       title = "Top 10 countries with lowest air pollution death rates (1990 vs 2021)",
+       caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal()+
   theme(
-    plot.title = element_text(face = "bold", size = 12, hjust = 0.5, lineheight = 1.1)
+    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1)
     
   )
 

@@ -26,7 +26,7 @@ df_healthsystems <- gbd_data %>%
     rei == "Air pollution",
     metric == "Rate",       # <- ensure we are using Rate, not Number
     cause == "All causes",
-    age == "All ages",
+    age == "Age-standardized",
     sex == "Both"
   ) %>%
   select(measure, location, val, upper, lower)
@@ -80,7 +80,7 @@ ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
   geom_text(aes(label = round(val, 0)), 
-            hjust = -0.2, vjust = -0.4,size = 4) +
+            hjust = -0.1, vjust = -0.4,size = 4) +
   scale_fill_manual(values = pal) +
   scale_y_continuous() +
   coord_flip() +
@@ -88,12 +88,12 @@ ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
     title = "Deaths rate attributable to air pollution by Health System type (2021)",
     x = "",
     y = "Death/100k",
-    caption = "Data Source: Global Burden Disease 2021"
+    caption = "Data Source: Global Burden of Disease 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold", size=12)
+    plot.title = element_text(face = "bold", size=18)
   )
 
 # DALYs
@@ -101,7 +101,7 @@ ggplot(df_dalys, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
   geom_text(aes(label = round(val, 0)), 
-            hjust = -0.2, vjust = -1,size = 4) +
+            hjust = -0.2, vjust = -1.5,size = 4) +
   scale_fill_manual(values = pal) +
   scale_y_continuous() +
   coord_flip() +
@@ -109,12 +109,12 @@ ggplot(df_dalys, aes(x = location, y = val, fill = location)) +
     title = "DALYs rate attributable to air pollution by Health System type (2021)",
     x = "",
     y = "DALYs/100k",
-    caption = "Data Source: Global Burden Disease 2021"
+    caption = "Data Source: Global Burden of Disease 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold", size=12)
+    plot.title = element_text(face = "bold", size=18)
   )
 
 ## General trend
