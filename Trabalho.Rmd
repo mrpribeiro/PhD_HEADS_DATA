@@ -178,22 +178,29 @@ print(classes_list)
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" & 
-        year == "2021")
-# Ordenar as regiões por valor
-gbd_filtered<-mutate(gbd_filtered,location = fct_reorder(location, val))
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths", 
+                location %in% gbd_data11$location,
+                sex == "Both", 
+                age == "Age-standardized", 
+                cause == "Chronic respiratory diseases", 
+                rei == "Air pollution", 
+                metric == "Rate", 
+                year == "2021"
+        ) %>%
+        mutate(
+                location = fct_reorder(location, val)# Ordenar as regiões por valor
+        )
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = location, y = val)) +
+gbd_filtered %>%
+        ggplot(aes(x = location, y = val)) +
         geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
         geom_errorbar( aes(x=location, ymin=lower, ymax=upper), 
-                width=0.4, colour="orange", alpha=0.9, size=0.5) + 
+                width=0.4, 
+                colour="orange", 
+                alpha=0.9, 
+                size=0.5) + 
         coord_flip() +
         labs(
                 title = "Taxa de Mortes por Doenças respiratórias por Local",
@@ -215,42 +222,50 @@ ggplot(data = gbd_filtered, aes(x = location, y = val)) +
 
 ```{r}
 # Filtrar linhas
-gbd_deaths <- gbd_total %>% filter(
-        measure == "Deaths" &
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" &
-        year == "2021")
-gbd_dalys <- gbd_total %>% filter(
-        measure == "DALYs (Disability-Adjusted Life Years)" & 
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" &
-        year == "2021")
-gbd_ylds <- gbd_total %>% filter(
-        measure == "YLDs (Years Lived with Disability)" & 
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" &
-        year == "2021")
-gbd_ylls <- gbd_total %>% filter(
-        measure == "YLLs (Years of Life Lost)" & 
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" &
-        year == "2021")
+gbd_deaths <- gbd_total %>% 
+        filter(
+                measure == "Deaths",
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized", 
+                cause == "Chronic respiratory diseases", 
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021"
+        )
+gbd_dalys <- gbd_total %>% 
+        filter(
+                measure == "DALYs (Disability-Adjusted Life Years)",
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized",
+                cause == "Chronic respiratory diseases",
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021"
+        )
+gbd_ylds <- gbd_total %>% 
+        filter(
+                measure == "YLDs (Years Lived with Disability)",
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized",
+                cause == "Chronic respiratory diseases",
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021"
+        )
+gbd_ylls <- gbd_total %>% 
+        filter(
+                measure == "YLLs (Years of Life Lost)",
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized",
+                cause == "Chronic respiratory diseases",
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021"
+        )
 # Ordenar as regiões por valor
 gbd_deaths<-gbd_deaths %>% arrange(desc(val))
 gbd_dalys<-gbd_dalys %>% arrange(desc(val))
@@ -266,14 +281,16 @@ cbind(
 ```
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% filter(
-        location %in% gbd_data11$location &
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" & 
-        year == "2021")
+gbd_filtered <- gbd_total %>% 
+        filter(
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized",
+                cause == "Chronic respiratory diseases",
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021",
+        )
 # Adicionar coluna de rank por medida e ordenar
 gbd_filtered <- gbd_filtered %>%
         group_by(measure) %>%
@@ -283,10 +300,16 @@ gbd_filtered <- gbd_filtered %>%
         ) %>%
         ungroup()
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = location, y = val,color = measure, group = measure)) +
+gbd_filtered %>%
+        ggplot(aes(x = location, y = val,color = measure, group = measure)) +
         geom_line(size = 1) +
         geom_point(size = 3) +
-        geom_text(aes(x = location, y = val, label = rank), vjust = -1.5, size = 3, fontface = "bold", inherit.aes = FALSE) +
+        geom_text(
+                aes(x = location, y = val, label = rank), 
+                vjust = -1.5, 
+                size = 3, 
+                fontface = "bold", 
+                inherit.aes = FALSE) +
         labs(
                 title = "Taxas Age-standardized para Doenças Respiratórias Crônicas (2021)",
                 x = "Região (ordenada por valor decrescente de death)",
@@ -305,24 +328,32 @@ ggplot(data = gbd_filtered, aes(x = location, y = val,color = measure, group = m
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "Chronic respiratory diseases" & 
-        rei == "Air pollution" & 
-        metric == "Rate" & 
-        year == "2021")
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
+                sex == "Both" & 
+                age == "Age-standardized" & 
+                cause == "Chronic respiratory diseases" & 
+                rei == "Air pollution" & 
+                metric == "Rate" & 
+                year == "2021"
+        )
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = factor(location,
+gbd_filtered %>%
+        ggplot(aes(x = factor(location,
                 levels = c("Low SDI", "Low-middle SDI", "Middle SDI","High-middle SDI", "High SDI")), 
                 y = val)) +
         geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
-        geom_errorbar( aes(x = factor(location,
+        geom_errorbar( 
+                aes(x = factor(location,
                 levels = c("Low SDI", "Low-middle SDI", "Middle SDI", "High-middle SDI", "High SDI")),
-                ymin=lower, ymax=upper), 
-                width=0.4, colour="orange", alpha=0.9, size=0.5) + 
+                ymin=lower, 
+                ymax=upper), 
+                width=0.4, 
+                colour="orange", 
+                alpha=0.9, 
+                size=0.5) + 
         coord_flip() +
         labs(
                 title = "Taxa de Mortes por SDI",
@@ -334,17 +365,19 @@ ggplot(data = gbd_filtered, aes(x = factor(location,
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-        sex == "Both" & 
-        age == "Age-standardized" & 
-        cause == "All causes" & 
-        rei == "Air pollution" & 
-        metric == "Rate")
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
+                sex == "Both" & 
+                age == "Age-standardized" & 
+                cause == "All causes" & 
+                rei == "Air pollution" & 
+                metric == "Rate"
+        )
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = year, 
-                y = val,color=factor(location,
+gbd_filtered %>%
+        ggplot(aes(x = year,y = val,color=factor(location,
                 levels = c("Low SDI", "Low-middle SDI", "Middle SDI","High-middle SDI", "High SDI")))) +
         geom_line(stat = "identity", width = 0.6, fill = "steelblue") +
         geom_ribbon(aes(ymin = lower, ymax = upper, fill = location, group = location),
@@ -352,8 +385,12 @@ ggplot(data = gbd_filtered, aes(x = year,
         #geom_errorbar( aes(x = year,
                 #ymin=lower, ymax=upper), 
                 #width=0.4, colour="orange", alpha=0.9, size=0.5) +
-        labs(title = "Taxa de Mortes por ano por SDI",
-                x = "Local", y = "Taxa", color="Nível de SDI") +
+        labs(
+                title = "Taxa de Mortes por ano por SDI",
+                x = "Local", 
+                y = "Taxa", 
+                color="Nível de SDI"
+        ) +
         theme_minimal()
 ```
 
@@ -362,67 +399,106 @@ ggplot(data = gbd_filtered, aes(x = year,
 
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location == "Global" & 
-        sex == "Both" & 
-        !age %in% c("All ages", "7-27 days", "Age-standardized") &
-        cause == "All causes" & 
-        rei == "Air pollution" & 
-        metric == "Rate" & 
-        year == "2021")
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location == "Global" & 
+                sex == "Both" & 
+                !age %in% c("All ages", "7-27 days", "Age-standardized") &
+                cause == "All causes" & 
+                rei == "Air pollution" & 
+                metric == "Rate" & 
+                year == "2021"
+        )
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = age, y = val)) +
+gbd_filtered %>%
+        ggplot(aes(x = age, y = val)) +
         geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
         geom_errorbar( aes(x=age, ymin=lower, ymax=upper), 
-                width=0.4, colour="orange", alpha=0.9, size=0.5) + 
-        labs(title = "Taxa de Mortes por idade",
-                x = "Idade", y = "Taxa de mortes") +
+                width=0.4, 
+                colour="orange", 
+                alpha=0.9, 
+                size=0.5) + 
+        labs(
+                title = "Taxa de Mortes por idade",
+                x = "Idade", 
+                y = "Taxa de mortes"
+        ) +
         theme_minimal()
 ```
 
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location == "Global" & 
-        sex %in% c("Male", "Female") &
-        !age %in% c("All ages", "7-27 days", "Age-standardized") &
-        cause == "All causes" & 
-        rei == "Air pollution" & 
-        metric == "Rate" & 
-        year == "2021")
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location == "Global" & 
+                sex %in% c("Male", "Female") &
+                !age %in% c("All ages", "7-27 days", "Age-standardized") &
+                cause == "All causes" & 
+                rei == "Air pollution" & 
+                metric == "Rate" & 
+                year == "2021"
+        )
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = age, y = val, fill = sex)) +  # Adicionado fill = sex para agrupamento
-        geom_bar(stat = "identity", width = 0.6, position = position_dodge(width = 0.6)) +  # position_dodge para barras lado a lado
+gbd_filtered %>%
+        ggplot(aes(x = age, y = val, fill = sex)) +  # Adicionado fill = sex para agrupamento
+        geom_bar(
+                stat = "identity", 
+                width = 0.6, 
+                position = position_dodge(width = 0.6)
+        ) +  # position_dodge para barras lado a lado
         geom_errorbar(aes(ymin = lower, ymax = upper), 
                 position = position_dodge(width = 0.6),  # Alinhar barras de erro com as barras dodged
-                width = 0.4, colour = "orange", alpha = 0.9, size = 0.5) + 
-        labs(title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", y = "Taxa de mortes", fill = "Sexo") +
+                width = 0.4, 
+                colour = "orange", 
+                alpha = 0.9, 
+                size = 0.5
+        ) + 
+        labs(
+                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
+                x = "Idade", 
+                y = "Taxa de mortes", 
+                fill = "Sexo"
+        ) +
         theme_minimal() +
         theme(legend.position = "right")
 ```
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-        sex == "Both" &
-        !age %in% c("All ages", "7-27 days", "Age-standardized") &
-        cause == "All causes" & 
-        rei == "Particulate matter pollution" & 
-        metric == "Rate" & 
-        year == "2021")
-gbd_filtered<-mutate(gbd_filtered,location = fct_reorder(location, val))
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
+                sex == "Both" &
+                !age %in% c("All ages", "7-27 days", "Age-standardized") &
+                cause == "All causes" & 
+                rei == "Particulate matter pollution" & 
+                metric == "Rate" & 
+                year == "2021"
+        ) %>%
+        mutate(location = fct_reorder(location, val))
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = age, y = val, fill = location)) +  # Adicionado fill = sex para agrupamento
-        geom_bar(stat = "identity", width = 0.6, position = position_dodge(width = 0.6)) +  # position_dodge para barras lado a lado
+gbd_filtered %>%
+        ggplot(aes(x = age, y = val, fill = location)) +  # Adicionado fill = sex para agrupamento
+        geom_bar(
+                stat = "identity", 
+                width = 0.6, 
+                position = position_dodge(width = 0.6)
+        ) +  # position_dodge para barras lado a lado
         geom_errorbar(aes(ymin = lower, ymax = upper), 
                 position = position_dodge(width = 0.6),  # Alinhar barras de erro com as barras dodged
-                width = 0.4, colour = "orange", alpha = 0.9, size = 0.5) + 
-        labs(title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", y = "Taxa de mortes", fill = "SDI") +
+                width = 0.4, 
+                colour = "orange", 
+                alpha = 0.9, 
+                size = 0.5
+        ) + 
+        labs(
+                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
+                x = "Idade", 
+                y = "Taxa de mortes", 
+                fill = "SDI"
+        ) +
         theme_minimal() +
         theme(legend.position = "right")
 ```
@@ -430,24 +506,39 @@ ggplot(data = gbd_filtered, aes(x = age, y = val, fill = location)) +  # Adicion
 
 ```{r}
 # Filtrar linhas
-gbd_filtered <- gbd_total %>% filter(
-        measure == "Deaths" & 
-        location == "Global" & 
-        sex %in% c("Male", "Female") &
-        age %in% c("Age-standardized") &
-        cause == "All causes" & 
-        !rei %in% c("Air pollution","All risk factors","Particulate matter pollution") & 
-        metric == "Rate") %>%
-                mutate(year = factor(year, levels = c(1990, 2000, 2010, 2020, 2021)))
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location == "Global" & 
+                sex %in% c("Male", "Female") &
+                age %in% c("Age-standardized") &
+                cause == "All causes" & 
+                !rei %in% c("Air pollution","All risk factors","Particulate matter pollution") & 
+                metric == "Rate"
+        ) %>%
+        mutate(year = factor(year, levels = c(1990, 2000, 2010, 2020, 2021)))
 # Fazer Barplot
-ggplot(data = gbd_filtered, aes(x = year, y = val, fill = rei)) +
-        geom_bar(stat = "identity", width = 0.7, position = position_dodge(width = 0.8)) +  # position_dodge para barras lado a lado
-        geom_errorbar(aes(ymin = lower, ymax = upper), 
+gbd_filtered %>%
+        ggplot(aes(x = year, y = val, fill = rei)) +
+        geom_bar(
+                stat = "identity", 
+                width = 0.7, 
+                position = position_dodge(width = 0.8)
+        ) +  # position_dodge para barras lado a lado
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
                 position = position_dodge(width = 0.8),  # Alinhar barras de erro com as barras dodged
-                width = 0.4, colour = "orange", alpha = 0.9, size = 0.5) +
+                width = 0.4, 
+                colour = "orange", 
+                alpha = 0.9, size = 0.5
+        ) +
         facet_grid(sex ~ ., scales = "fixed") +
-        labs(title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", y = "Taxa de mortes", fill = "Fator de risco") +
+        labs(
+                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
+                x = "Idade", 
+                y = "Taxa de mortes", 
+                fill = "Fator de risco"
+        ) +
         theme_minimal() +
         theme(legend.position = "right")
 ```
