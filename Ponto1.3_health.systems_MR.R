@@ -1,7 +1,8 @@
 ###########################################################################################################
 # How do deaths and DALYs attributable to air pollution differ across health systems of varying strength? #
 ###########################################################################################################
-
+library(readxl)
+library(dplyr)
 library(ggplot2)
 library(scales)
 library(forcats)
@@ -21,7 +22,6 @@ health_systems <- c("Advanced Health System",
 # Filter and summarise for Rate:
 df_healthsystems <- gbd_data %>%
   filter(
-    measure %in% c("Deaths", "DALYs (Disability-Adjusted Life Years)"),
     location %in% health_systems,
     rei == "Air pollution",
     metric == "Rate",       # <- ensure we are using Rate, not Number
@@ -40,6 +40,14 @@ df_healthsystems <- df_healthsystems %>%
     "Advanced Health System"
   )))
 
+# Ordered measure
+df_healthsystems$measure <- factor(df_healthsystems$measure,
+                                     levels = c("Deaths",
+                                                "DALYs (Disability-Adjusted Life Years)",
+                                                "YLLs (Years of Life Lost)",
+                                                "YLDs (Years Lived with Disability)")
+)
+
 # Custom palette: worse -> better
 pal <- c(
   "Minimal Health System"   = "#b2182b",
@@ -49,7 +57,7 @@ pal <- c(
 )
 
 # Plot
-ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
+A <- ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
   scale_fill_manual(values = pal) +
@@ -58,17 +66,23 @@ ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
   coord_flip() +
   labs(
     title = "Impact of Air Pollution by Health System Type (2021)",
-    subtitle = "Deaths and DALYs (per 100,000 population) with 95% uncertainty intervals",
+    subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
     x = "",
     y = "Rate per 100,000",
-    caption = "Data Source: GBD 2021"
+    caption = "Data Source: Global Burden of Disease 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
-    strip.text = element_text(face = "bold"),
-    plot.title = element_text(face = "bold")
+    strip.text = element_text(face = "bold", size = 20),
+    plot.title = element_text(face = "bold", size = 24)
+    
   )
+
+save_plot <- function(plot, filename){
+  ggsave(filename, plot = plot, width = 12, height = 6, dpi = 300)
+}
+save_plot(A, "healthsystems4.png")
 
 
 # Separate data

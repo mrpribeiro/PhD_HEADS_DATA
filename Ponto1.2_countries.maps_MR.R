@@ -96,7 +96,7 @@ world_data_1990 <- world %>%
 fill_limits <- range(c(world_data_1990$val, world_data_2021$val), na.rm = TRUE)
 
 # Plot DEATHS 2021
-ggplot(data = world_data_2021) +
+p2021 <- ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
                        name = "Deaths/100k", limits = fill_limits) +
@@ -112,7 +112,7 @@ ggplot(data = world_data_2021) +
   )
 
 # Plot DEATHS 1990
-ggplot(data = world_data_1990) +
+p1990 <- ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
                        name = "Deaths/100k", limits = fill_limits) +
@@ -126,6 +126,58 @@ ggplot(data = world_data_1990) +
     legend.title = element_text(size = 12),
     legend.text = element_text(size = 10)
   )
+
+#####
+
+library(ggplot2)
+library(patchwork)
+
+# Common theme to make things consistent
+base_theme <- theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank()
+  )
+
+# --- Plot for 1990 (no legend, simple title) ---
+p1990 <- ggplot(data = world_data_1990) +
+  geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
+  scale_fill_viridis_c(
+    option = "inferno", na.value = "lightgrey",
+    direction = -1, name = "Deaths/100k", limits = fill_limits
+  ) +
+  labs(title = "1990") +
+  base_theme +
+  theme(legend.position = "none")  # remove legend
+
+# --- Plot for 2021 (keep legend) ---
+p2021 <- ggplot(data = world_data_2021) +
+  geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
+  scale_fill_viridis_c(
+    option = "inferno", na.value = "lightgrey",
+    direction = -1, name = "Deaths/100k", limits = fill_limits
+  ) +
+  labs(title = "2021") +
+  base_theme
+
+# --- Combine side by side ---
+combined <- p1990 + p2021 +
+  plot_annotation(
+    title = "Global health impact of air pollution",
+    subtitle = "Death rates per 100,000 population",
+    caption = "Data Source: Global Burden of Disease 2021"
+  ) &
+  theme(
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 14, hjust = 0.5)
+  )
+
+combined
+
 
 ###  ###
 
@@ -282,4 +334,53 @@ ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year))
     
   )
 
+########33
+# Define a consistent color mapping for years
+year_colors <- c("1990" = "#003f5c", "2021" = "#ffa600")
+
+# --- Base theme ---
+base_theme <- theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title.y = element_blank(),
+    axis.title.x = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+# --- Lollipop HIGH ---
+p_high <- ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  coord_flip() +
+  scale_color_manual(values = year_colors, name = "Year") +
+  labs(title = "Highest", y = "Deaths/100k") +
+  base_theme +
+  theme(legend.position = "none")  # hide legend for this plot
+
+# --- Lollipop LOW ---
+p_low <- ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = location, xend = location, y = 0, yend = val), linewidth = 1) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  coord_flip() +
+  scale_color_manual(values = year_colors, name = "Year") +
+  labs(title = "Lowest", y = "Deaths/100k") +
+  base_theme  # keep legend here
+
+# --- Combine side by side ---
+combined <- p_high + p_low +
+  plot_annotation(
+    title = "Top 10 countries by air pollution death rates",
+    subtitle = "Comparison between 1990 and 2021",
+    caption = "Data Source: Global Burden of Disease 2021"
+  ) &
+  theme(
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 14, hjust = 0.5)
+  )
+
+combined
 
