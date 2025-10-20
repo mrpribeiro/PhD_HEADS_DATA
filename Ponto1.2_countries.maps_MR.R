@@ -23,7 +23,7 @@ df_deaths_clean_2021 <- gbd_data_2021 %>%
     measure == "Deaths",
     rei == "Air pollution",
     metric == "Rate",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "Age-standardized"
   ) %>%
   select(location, val, upper, lower)
@@ -33,7 +33,7 @@ df_deaths_clean_1990 <- gbd_data_1990 %>%
     measure == "Deaths",
     rei == "Air pollution",
     metric == "Rate",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "Age-standardized"
   ) %>%
   select(location, val, upper, lower)
@@ -100,9 +100,9 @@ p2021 <- ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
                        name = "Deaths/100k", limits = fill_limits) +
-  labs(title = "Global health impact of air pollution in 2021",
+  labs(title = "Global health impact of air pollution on CRD in 2021",
        subtitle = "Death rates per 100,000 population",
-       caption = "Data Source: Global Burden of Disease 2021") +
+       caption = "Data Source: GBD 2021") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold"),
@@ -116,9 +116,9 @@ p1990 <- ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "inferno", na.value = "lightgrey", direction = -1,
                        name = "Deaths/100k", limits = fill_limits) +
-  labs(title = "Global health impact of air pollution in 1990",
+  labs(title = "Global health impact of air pollution on CRD in 1990",
        subtitle = "Death rates per 100,000 population",
-       caption = "Data Source: Global Burden of Disease 2021") +
+       caption = "Data Source: GBD 2021") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold"),
@@ -167,9 +167,9 @@ p2021 <- ggplot(data = world_data_2021) +
 # --- Combine side by side ---
 combined <- p1990 + p2021 +
   plot_annotation(
-    title = "Global health impact of air pollution",
+    title = "Global health impact of air pollution on CRD",
     subtitle = "Death rates per 100,000 population",
-    caption = "Data Source: Global Burden of Disease 2021"
+    caption = "Data Source: GBD 2021"
   ) &
   theme(
     plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
@@ -188,7 +188,7 @@ df_DALYS_clean_2021 <- gbd_data_2021 %>%
     measure == "DALYs (Disability-Adjusted Life Years)",
     rei == "Air pollution",
     metric == "Rate",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "Age-standardized"
   ) %>%
   select(location, val, upper, lower)
@@ -198,7 +198,7 @@ df_DALYS_clean_1990 <- gbd_data_1990 %>%
     measure == "DALYs (Disability-Adjusted Life Years)",
     rei == "Air pollution",
     metric == "Rate",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "Age-standardized"
   ) %>%
   select(location, val, upper, lower)
@@ -234,9 +234,9 @@ ggplot(data = world_data_2021) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
                        name = "DALYs/100k", limits = fill_limits) +
-  labs(title = "Global health impact of air pollution in 2021",
+  labs(title = "Global health impact of air pollution on CRD in 2021",
        subtitle = "Disability-adjusted life years per 100,000 population",
-       caption = "Data Source: Global Burden of Disease 2021") +
+       caption = "Data Source: GBD 2021") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold"),
@@ -250,9 +250,9 @@ ggplot(data = world_data_1990) +
   geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
   scale_fill_viridis_c(option = "rocket", na.value = "lightgrey", direction = -1,
                        name = "DALYs/100k", limits = fill_limits) +
-  labs(title = "Global health impact of air pollution in 1990",
+  labs(title = "Global health impact of air pollution on CRD in 1990",
        subtitle = "Disability-adjusted life years per 100,000 population",
-       caption = "Data Source: Global Burden of Disease 2021") +
+       caption = "Data Source: GBD 2021") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold"),
@@ -311,10 +311,14 @@ ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year))
   scale_color_viridis(discrete = TRUE, option = "viridis") +
   labs(x = "", y = "Deaths/100k",
        title = "Top 10 countries with highest air pollution death rates (1990 vs 2021)",
-       caption = "Data Source: Global Burden of Disease 2021")+
+       caption = "Data Source: GBD 2021")+
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1)
+    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.text.x  = element_text(size = 12),   # x-axis tick labels
+    axis.text.y  = element_text(size = 12),   # y-axis tick labels
   )
 
 
@@ -330,9 +334,12 @@ ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year))
        caption = "Data Source: Global Burden of Disease 2021") +
   theme_minimal()+
   theme(
-    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1)
-    
-  )
+    plot.title = element_text(face = "bold", size = 18, lineheight = 1.1),
+      axis.title.x = element_text(size = 12, face = "bold"),
+      axis.title.y = element_text(size = 12, face = "bold"),
+      axis.text.x  = element_text(size = 12),   # x-axis tick labels
+      axis.text.y  = element_text(size = 12),   # y-axis tick labels
+    )
 
 ########33
 # Define a consistent color mapping for years
@@ -373,9 +380,9 @@ p_low <- ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color
 # --- Combine side by side ---
 combined <- p_high + p_low +
   plot_annotation(
-    title = "Top 10 countries by air pollution death rates",
+    title = "Top 10 countries by air pollution death rates on CRD",
     subtitle = "Comparison between 1990 and 2021",
-    caption = "Data Source: Global Burden of Disease 2021"
+    caption = "Data Source: GBD 2021"
   ) &
   theme(
     plot.title = element_text(size = 18, face = "bold", hjust = 0.5),

@@ -25,7 +25,7 @@ df_healthsystems <- gbd_data %>%
     location %in% health_systems,
     rei == "Air pollution",
     metric == "Rate",       # <- ensure we are using Rate, not Number
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "Age-standardized",
     sex == "Both"
   ) %>%
@@ -57,27 +57,32 @@ pal <- c(
 )
 
 # Plot
-A <- ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
+ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
   geom_col(color = "black", width = 0.7) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
   scale_fill_manual(values = pal) +
-  scale_y_continuous() +  # remove comma formatting for rates
+  scale_y_continuous() +
   facet_wrap(~ measure, scales = "free_x") +
   coord_flip() +
   labs(
-    title = "Impact of Air Pollution by Health System Type (2021)",
+    title = "Impact of Air Pollution on CRD by Health System Type (2021)",
     subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
     x = "",
     y = "Rate per 100,000",
-    caption = "Data Source: Global Burden of Disease 2021"
+    caption = "Data Source: GBD 2021"
   ) +
   theme_minimal(base_size = 13) +
   theme(
     legend.position = "none",
     strip.text = element_text(face = "bold", size = 20),
-    plot.title = element_text(face = "bold", size = 24)
-    
+    plot.title = element_text(face = "bold", size = 24),
+    plot.subtitle = element_text(size = 16),
+    axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
+    axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
+    axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
+    axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
   )
+
 
 save_plot <- function(plot, filename){
   ggsave(filename, plot = plot, width = 12, height = 6, dpi = 300)

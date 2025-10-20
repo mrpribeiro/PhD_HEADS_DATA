@@ -39,7 +39,7 @@ global_deaths <- gbd_data %>%
     location == "Global",
     rei == "Air pollution",
     metric == "Number",
-    cause == "All causes",
+    cause == "Chronic respiratory disease",
     age == "All ages",
     sex == "Both"
   ) %>%
@@ -54,7 +54,7 @@ global_DALYs <- gbd_data %>%
     location == "Global",
     rei == "Air pollution",
     metric == "Number",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "All ages",
     sex == "Both"
   ) %>%
@@ -69,7 +69,7 @@ global_DALYsYLLsYLDs<- gbd_data %>%
     location == "Global",
     rei == "Air pollution",
     metric == "Number",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "All ages",
     sex == "Both"
   ) %>%
@@ -160,7 +160,7 @@ global_summary_all <- gbd_data %>%
     location == "Global",
     rei == "Air pollution",
     metric == "Number",
-    cause == "All causes",
+    cause == "Chronic respiratory diseases",
     age == "All ages",
     sex == "Both"
   ) %>%
@@ -173,28 +173,31 @@ global_summary_all$measure <- factor(global_summary_all$measure,
                                                 "YLDs (Years Lived with Disability)")
 )
 
-# Plot all four metrics with facets
 ggplot(global_summary_all, aes(x = year, y = val, color = measure, fill = measure)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
   geom_line(size = 1.2) +
   geom_point(size = 2) +
   facet_wrap(~ measure, scales = "free_y") +
   labs(
-    title = "Global burden attributable to air pollution (1990–2021)",
+    title = "Global burden attributable to air pollution on CRD (1990–2021)",
     x = "Year",
     y = "Total number",
     color = "Measure",
     fill = "Measure",
-    caption = "Data Source: Global Burden of Disease 2021"
+    caption = "Data Source: GBD 2021"
   ) +
-  theme_minimal() +
+  scale_y_continuous(labels = scientific_format(digits = 2)) +
+  theme_minimal(base_size = 13) +
   theme(
-    axis.title.x = element_text(size = 13),
-    axis.title.y = element_text(size = 13),
-    plot.title = element_text(size = 16, face = "bold"),
-    strip.text = element_text(size = 12, face = "bold"),
-    legend.position = "none"  # remove legend since it's already clear in facets
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x  = element_text(size = 14),   # x-axis tick labels
+    axis.text.y  = element_text(size = 14),   # y-axis tick labels
+    plot.title   = element_text(size = 20, face = "bold"),
+    strip.text   = element_text(size = 16, face = "bold"),
+    legend.position = "none"
   )
+
 
 ## DALYs
 # 
