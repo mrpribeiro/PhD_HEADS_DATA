@@ -157,6 +157,21 @@ classes_list <- list(
 # Ver a estrutura da lista de modo a ficar mais compacto.
 print(classes_list)
 ```
+```{r}
+gbd_filtered <- gbd_total %>% 
+        filter(
+                measure == "Deaths" & 
+                location %in% c("Advanced Health System","Basic Health System","Limited Health System",                 "Minimal Health System") & 
+                sex == "Both" & 
+                age == "Age-standardized" & 
+                cause == "Chronic respiratory diseases" & 
+                rei == "Air pollution" & 
+                metric == "Rate" & 
+                year == "2021"
+        )
+gbd_filtered$val
+```
+
 
 ## Ferramentas
 
@@ -291,19 +306,34 @@ gbd_filtered <- gbd_total %>%
                 metric == "Rate",
                 year == "2021",
         )
+# Obter os top 10 locais com mais mortes
+top_locations <- gbd_filtered %>%
+  filter(measure == "Deaths") %>%
+  arrange(desc(val)) %>%
+  mutate(rank = row_number()) %>%
+  slice(1:10) %>%
+  pull(location)
 # Adicionar coluna de rank por medida e ordenar
 gbd_filtered <- gbd_filtered %>%
+        #filter(location %in% top_locations) %>%
         group_by(measure) %>%
         mutate(
                 rank = rank(-val, ties.method = "first"),
+                rank = if_else(rank <= 10, rank, NA_integer_),
                 location = fct_reorder(location, desc(val))
         ) %>%
         ungroup()
 # Fazer Barplot
 gbd_filtered %>%
         ggplot(aes(x = location, y = val,color = measure, group = measure)) +
-        geom_line(size = 1) +
-        geom_point(size = 3) +
+        geom_line(
+                size = 1,
+                alpha = 0.5,
+        ) +
+        geom_point(
+                size = 3,
+                alpha = 0.5,
+        ) +
         geom_text(
                 aes(x = location, y = val, label = rank), 
                 vjust = -1.5, 
@@ -311,10 +341,10 @@ gbd_filtered %>%
                 fontface = "bold", 
                 inherit.aes = FALSE) +
         labs(
-                title = "Taxas Age-standardized para Doenças Respiratórias Crônicas (2021)",
-                x = "Região (ordenada por valor decrescente de death)",
-                y = "Valor (Taxa)",
-                color = "Medida",
+                title = "Chronic Respiratory Disease Burden by Region (2021)",
+                x = "Regions (ordered by decreasing number of deaths)",
+                y = "Measure (rate)",
+                color = "Measure",
                 caption = "Data source: GBD 2021"
         ) +
         theme_minimal() +
@@ -322,7 +352,6 @@ gbd_filtered %>%
                 axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
         )
 ```
-
 
 ### Existe correlação entre o Índice Sociodemográfico (SDI) e a carga de doença?
 
@@ -442,16 +471,18 @@ gbd_filtered <- gbd_total %>%
         )
 # Fazer Barplot
 gbd_filtered %>%
-        ggplot(aes(x = age, y = val, fill = sex,alpha = 0.5)) +  # Adicionado fill = sex para agrupamento
+        ggplot(aes(x = age, y = val, fill = sex)) +  # Adicionado fill = sex para agrupamento
         geom_bar(
                 stat = "identity", 
-                width = 0.6, 
-                        ) +  # position_dodge para barras lado a lado
+                width = 0.6,
+                alpha = 0.5,
+        ) +  # position_dodge para barras lado a lado
         labs(
-                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", 
-                y = "Taxa de mortes", 
-                fill = "Sexo"
+                title = "Impact of Type of Air Pollution by Age and Gender (2021)",
+                x = "Age", 
+                y = "Deaths (rate per 100,000)", 
+                fill = "Gender",
+                caption = "Data Source: GBD 2021"
         ) +
         theme_minimal() +
         theme(legend.position = "right")
@@ -476,7 +507,8 @@ gbd_filtered %>%
         geom_bar(
                 stat = "identity", 
                 width = 0.6, 
-                position = position_dodge(width = 0.6)
+                position = position_dodge(width = 0.6),
+                alpha = 0.5,
         ) +  # position_dodge para barras lado a lado
         geom_errorbar(aes(ymin = lower, ymax = upper), 
                 position = position_dodge(width = 0.6),  # Alinhar barras de erro com as barras dodged
