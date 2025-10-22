@@ -1,10 +1,11 @@
 ---
-title: "Análise da Poluição do Ar com Dados do GBD"
+title: "Impact of Air Pollution on Chronic Respiratoy Diseases: An Exploratory Data Analysis of GBD Data"
 author: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
     toc: true
+    toc_depth: 3
     number_sections: true
     citation_package: default
 bibliography: referencias.bib
@@ -12,25 +13,25 @@ csl: apa7.csl
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE,message=FALSE, warning=FALSE, cache=TRUE)
 ```
 
-# Resumo
+# Abstract
 
 Este trabalho analisa os impactos da poluição do ar na saúde pública utilizando 
 dados do Global Burden of Disease (GBD)[@bennitt_global_nodate]. Através de técnicas de preparação e 
 análise exploratória de dados (EDA), são identificadas tendências, padrões e 
 potenciais problemas de qualidade nos dados.
 
-# Introdução
+# Introduction
 
 A poluição do ar é um dos principais fatores de risco para doenças respiratórias 
 e cardiovasculares. Este estudo visa explorar os dados do GBD para compreender 
 melhor os efeitos da poluição do ar em diferentes países, faixas etárias e géneros.
 
-# Metodologia
+# Methodology
 
-## Fonte de Dados
+## Data source
 
 - Dados extraídos do GBD 2021
 - Ferramenta utilizada: GBD Results Tool
@@ -77,15 +78,25 @@ IHME-GBD_2021_DATA-382c4db5-1.csv
         *Locais (regiões who, continentes (?), SDI e sistemas de saúde)
         *Anos (1990, 2000, 2010,2020 e 2021)
 
-## Preparação dos Dados
+## Data preparation
 
 - Seleção de colunas relevantes (e.g., país, ano, sexo, idade, medida, causa)
 - Tratamento de dados faltantes e outliers
 - Verificação de formatos e consistência
 
-```{r,message=FALSE}
-#install.packages("tidyverse")
+```{r}
+#install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork"))
+
+# Load necessary libraries
 library(tidyverse) #Já inclui dplyr + ggplot2 + forcat etc...
+library(scales)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(countrycode)
+library(viridis)
+library(patchwork)
+library(purrr)
 #Remove everything, clean environment
 rm(list = ls())
 ```
@@ -120,20 +131,17 @@ glimpse(gbd_total)
 ```
 
 
-
 ```{r}
 # Converter colunas para factor
 gbd_total <- gbd_total %>%
         mutate(across(c(measure, location, sex, age, cause, rei, metric), as.factor))
 ```
 
-
-
 ```{r}
 names(gbd_total)
 ```
 
-```{r}
+```{r,results='asis'}
 # Devolve um vetor com todos os valores únicos (os nomes das categorias)
 measure_classes <- unique(gbd_total$measure)
 location_classes <- unique(gbd_total$location)
@@ -154,132 +162,528 @@ classes_list <- list(
         metric = metric_classes,
         year = year_classes
 )
-# Ver a estrutura da lista de modo a ficar mais compacto.
-print(classes_list)
+# Função para formatar cada categoria
+format_line <- function(name, values) {
+  paste0("**", name, ":** ", paste(values, collapse = ", "), "  \n")
+}
+
+# Aplicar a função à lista
+markdown_text <- purrr::map2(names(classes_list), classes_list, format_line) %>%
+  paste(collapse = "")
+
+# Imprimir no formato Markdown
+cat(markdown_text)
 ```
 
-## Ferramentas
+## Tools
 
 - Linguagem: R
 - Ambiente: RStudio
 - Pacotes: `tidyverse`
 
-# Análise Exploratória dos Dados (EDA)
-
-## 1. Impacto Geral da Poluição do Ar
-
-## 2. Doenças Respiratórias Específicas
-
-## 3. Tendências Temporais
-
-## 4. Disparidades Regionais e Sociais
-
-### Quais regiões têm maior carga de doenças respiratórias atribuíveis à poluição do ar?
+# Results
 
 ```{r}
-# Filtrar linhas
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths", 
-                location %in% gbd_data11$location,
-                sex == "Both", 
-                age == "Age-standardized", 
-                cause == "Chronic respiratory diseases", 
-                rei == "Air pollution", 
-                metric == "Rate", 
-                year == "2021"
-        ) %>%
-        mutate(
-                location = fct_reorder(location, val)# Ordenar as regiões por valor
+# Custom palette: worse -> better
+pal <- c(
+        "High SDI" = "#1a9850",
+        "High-middle SDI" = "#fee08b",
+        "Middle SDI" = "#fed976",
+        "Low-middle SDI" = "#fdae61",
+        "Low SDI" = "#b2182b",
+        "Minimal Health System"   = "#b2182b",
+        "Limited Health System"   = "#fdae61",
+        "Basic Health System"     = "#fee08b",
+        "Advanced Health System"  = "#1a9850"
         )
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = location, y = val)) +
-        geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
-        geom_errorbar( aes(x=location, ymin=lower, ymax=upper), 
-                width=0.4, 
-                colour="orange", 
-                alpha=0.9, 
-                size=0.5) + 
+# Define the health system categories
+SDI_regions <- c(
+        "Low SDI",
+        "Low-middle SDI",
+        "Middle SDI",
+        "High-middle SDI",
+        "High SDI"
+        )
+# Define the health system categories
+health_systems <- c("Advanced Health System",
+                    "Basic Health System",
+                    "Limited Health System",
+                    "Minimal Health System")
+# Define countries
+countries <- gbd_data10$location
+# Define country super regions
+country_regions <- gbd_data11$location
+```
+
+## Impact of different types of polluents
+
+```{r}
+df_types <- gbd_total %>%
+        filter(
+                measure =="DALYs (Disability-Adjusted Life Years)",
+                cause == "Chronic respiratory diseases",
+                rei %in% c("Ambient particulate matter pollution", 
+                           "Household air pollution from solid fuels",
+                           "Nitrogen dioxide pollution",
+                           "Ambient ozone pollution"),
+                metric == "Rate",     
+                location == "Global",
+                age == "All ages",
+                sex == "Both"
+        )
+# Ordenar tipos de poluição para apresentação consistente
+df_types$rei <- factor(df_types$rei,
+        levels = c("Household air pollution from solid fuels",
+                "Ambient particulate matter pollution",
+                "Nitrogen dioxide pollution",
+                "Ambient ozone pollution"
+        ))
+# Nova paleta para tipos de poluição
+pal_pollution <- c(
+        "Ambient particulate matter pollution" = "#fdae61",
+        "Household air pollution from solid fuels" =  "#b2182b" ,
+        "Nitrogen dioxide pollution" = "#2b83ba",
+        "Ambient ozone pollution" = "#66c2a5"
+        )
+# Plot
+df_types %>% 
+        ggplot(aes(x = rei, y = val, fill = rei)) +
+        geom_col(color = "black", width = 0.7) +
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
+                width = 0.18, 
+                size = 0.6, 
+                color = "black"
+        ) +
+        geom_text(
+                aes(label = round(val, 0)), 
+                hjust = -1, 
+                vjust = -0.9,
+                size = 4) +
+        scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+        scale_fill_manual(values = pal_pollution, name = "Type of pollution") +
+        facet_grid(measure ~ cause, scales = "free_y") +
         coord_flip() +
         labs(
-                title = "Taxa de Mortes por Doenças respiratórias por Local",
-                x = "Local", 
-                y = "Taxa (100.000 hab.)",
+                title = "Global Impact of Different Types of Air Pollution on CRD (2021)",
+                subtitle = "DALYs per 100,000 population",
+                x = "",
+                y = "Rate per 100,000",
                 caption = "Data source: GBD 2021"
+        ) +
+        theme_minimal(base_size = 13) +
+        theme(
+                legend.position = "none",
+                strip.text = element_text(face = "bold", size = 20),
+                plot.title = element_text(face = "bold", size = 24),
+                plot.subtitle = element_text(size = 16),
+                axis.title.x = element_text(size = 20, face = "bold"),  # y-axis title (since coord_flip)
+                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
+                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
+                axis.text.y  = element_text(size = 18)                  # tick labels (y-axis)
+        )
+```
+
+
+## Impact on different Socio-demographic Index
+
+### Percentage of Household Air Pollution contribution on particulate matter pollution
+
+```{r}
+# Filter and summarise for Rate:
+df_SDI2 <- gbd_total %>%
+        filter(
+                location %in% SDI_regions,
+                rei %in% c("Household air pollution from solid fuels",
+                        "Ambient particulate matter pollution"),
+                metric == "Rate",     
+                cause == "Chronic respiratory diseases",
+                age == "Age-standardized",
+                sex == "Both"
+        ) %>%
+        select(measure, location, val, rei)
+# Calcular proporção de Household / (Ambient + Household)
+df_prop <- df_SDI2 %>%
+        filter(rei %in% c("Ambient particulate matter pollution",
+                "Household air pollution from solid fuels")) %>%
+        group_by(location, measure) %>%
+        summarise(
+                ambient = sum(val[rei == "Ambient particulate matter pollution"], na.rm = TRUE),
+                household = sum(val[rei == "Household air pollution from solid fuels"], na.rm = TRUE)
+        ) %>%
+        mutate(proportion_household = household / (ambient + household))
+# Make sure your health_systems are ordered in the plot
+df_prop <- df_prop %>%
+        mutate(location = factor(location, levels = c(
+                "Low SDI",
+                "Low-middle SDI",
+                "Middle SDI",
+                "High-middle SDI",
+                "High SDI"
+        )))
+# Ordered measure
+df_prop$measure <- factor(df_prop$measure,
+        levels = c(
+                "Deaths",
+                "DALYs (Disability-Adjusted Life Years)",
+                "YLLs (Years of Life Lost)",
+                "YLDs (Years Lived with Disability)"
+        ))
+# Plot
+df_prop %>% 
+        ggplot(aes(x = location, y = proportion_household, fill = location)) +
+        geom_col(color = "black", width = 0.7) +
+        geom_text(
+                aes(label = scales::percent(proportion_household, accuracy = 1)),
+                hjust = -0.2, 
+                size = 4
+        ) +
+        scale_fill_manual(values = pal) +
+        scale_y_continuous(
+                labels = percent_format(accuracy = 1), 
+                limits = c(0, 1.05)
+        ) +
+        facet_wrap(~ measure, scales = "free_x") +
+        coord_flip() +
+        labs(
+                title = "Percentage of Household Air Pollution contribution on particulate matter pollution",
+                subtitle = "By SDI classes (2021)",
+                x = "",
+                y = "",
+                caption = "Source: GBD 2021"
+        ) +
+        theme_minimal(base_size = 13) +
+        theme(
+                legend.position = "none",
+                strip.text = element_text(face = "bold", size = 20),
+                plot.title = element_text(face = "bold", size = 24),
+                plot.subtitle = element_text(size = 16),
+                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
+                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
+                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
+                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
+        )
+```
+
+
+### Impact of Particulate Matter Pollution by SDI Classes (2021)
+
+```{r}
+# Filter and summarise for Rate:
+df_SDI_regions <- gbd_total %>%
+        filter(
+                location %in% SDI_regions,
+                rei == "Air pollution",
+                metric == "Rate",       # <- ensure we are using Rate, not Number
+                cause == "Chronic respiratory diseases",
+                age == "Age-standardized",
+                sex == "Both"
+        ) %>%
+        select(measure, location, val, upper, lower)
+# Make sure SDI regions are ordered in the plot
+df_SDI_regions <- df_SDI_regions %>%
+        mutate(location = factor(location, levels = c(
+                "Low SDI",
+                "Low-middle SDI",
+                "Middle SDI",
+                "High-middle SDI",
+                "High SDI"
+        )))
+# Ordered measure
+df_SDI_regions$measure <- factor(df_SDI_regions$measure,levels = c(
+        "Deaths",
+        "DALYs (Disability-Adjusted Life Years)",
+        "YLLs (Years of Life Lost)",
+        "YLDs (Years Lived with Disability)"
+        ))
+# Plot
+df_SDI_regions %>% 
+        ggplot(aes(x = location, y = val, fill = location)) +
+        geom_col(color = "black", width = 0.7) +
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
+                width = 0.18, 
+                size = 0.6, 
+                color = "black") +
+        geom_text(
+                aes(label = round(val, 0)), 
+                hjust = -0.1, 
+                vjust = -0.4,
+                size = 4
+        ) +
+        scale_fill_manual(values = pal) +
+        scale_y_continuous() +
+        facet_wrap(~ measure, scales = "free_x") +
+        coord_flip() +
+        labs(
+                title = "Impact of Particulate Matter Pollution by SDI Classes (2021)",
+                subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
+                x = "",
+                y = "Rate per 100,000",
+                caption = "Data Source: GBD 2021"
+        ) +
+        theme_minimal(base_size = 13) +
+        theme(
+                legend.position = "none",
+                strip.text = element_text(face = "bold", size = 20),
+                plot.title = element_text(face = "bold", size = 24),
+                plot.subtitle = element_text(size = 16),
+                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
+                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
+                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
+                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
+        )
+```
+
+## DALYs attributable to household vs ambient particulate air pollution worldwide (1990–2021)
+
+
+```{r}
+# Preparar os dados
+global_DALYS_year <- gbd_total %>%
+        filter(
+                measure == "DALYs (Disability-Adjusted Life Years)",
+                location == "Global",
+                rei %in% c("Household air pollution from solid fuels","Ambient particulate matter pollution"),
+                metric == "Number",
+                cause == "Chronic respiratory diseases",
+                age == "All ages",
+                sex == "Both"
+        ) %>%
+        select(rei, year, val, upper, lower)
+# Plot
+global_DALYS_year %>%
+        ggplot(aes(x = year, y = val, color = rei, fill = rei, group = rei)) +
+        geom_ribbon(
+                aes(ymin = lower, ymax = upper), 
+                alpha = 0.2, 
+                color = NA) +
+        geom_line(size = 1.2) +
+        scale_color_manual(values = c(
+                "Ambient particulate matter pollution" = "#fdae61",
+                "Household air pollution from solid fuels" = "#b2182b"
+        )) +
+        scale_fill_manual(values = c(
+                "Ambient particulate matter pollution" = "#fdae61",
+                "Household air pollution from solid fuels" = "#b2182b"
+        )) +
+        geom_point(size = 2) +
+        labs(
+                title = "DALYs attributable to particulate air pollution worldwide (1990–2021)",
+                x = "Year",
+                y = "DALYs (Number)",
+                color = NULL,
+                fill = NULL,
+                caption = "Data Source: Global Burden of Disease 2021"
         ) +
         theme_minimal() +
         theme(
-                plot.title = element_text(size = 16, face = "bold"),
-                axis.title.x = element_text(size = 25),              
-                axis.title.y = element_text(size = 25),               
-                axis.text.x = element_text(size = 15),               
-                axis.text.y = element_text(size = 15)           
-  )
-#ggsave("mortes_regiao.jpeg", width = 18, height = 12, units = "cm", dpi = 300)
+                axis.title.x = element_text(size = 18),
+                axis.title.y = element_text(size = 18),
+                plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+                plot.subtitle = element_text(size = 14, hjust = 0.5),
+                legend.title = element_text(size = 18),
+                legend.text = element_text(size = 18)
+        )
 ```
+
+## Geographical Distribution
+
+
+### Global health impact of air pollution on CRD in 1990 and 2021
 
 
 ```{r}
-# Filtrar linhas
-gbd_deaths <- gbd_total %>% 
+#Filter and select relevant columns for deaths in 2021
+df_deaths_clean_2021 <- gbd_total %>%
         filter(
                 measure == "Deaths",
-                location %in% gbd_data11$location,
-                sex == "Both",
-                age == "Age-standardized", 
-                cause == "Chronic respiratory diseases", 
-                rei == "Air pollution",
-                metric == "Rate",
-                year == "2021"
-        )
-gbd_dalys <- gbd_total %>% 
-        filter(
-                measure == "DALYs (Disability-Adjusted Life Years)",
-                location %in% gbd_data11$location,
+                location %in% countries,
                 sex == "Both",
                 age == "Age-standardized",
                 cause == "Chronic respiratory diseases",
                 rei == "Air pollution",
                 metric == "Rate",
                 year == "2021"
-        )
-gbd_ylds <- gbd_total %>% 
+        ) %>%
+        select(location, val, upper, lower)
+
+#Filter and select relevant columns for deaths in 1990
+df_deaths_clean_1990 <- gbd_total %>%
         filter(
-                measure == "YLDs (Years Lived with Disability)",
-                location %in% gbd_data11$location,
+                measure == "Deaths",
+                location %in% countries,
                 sex == "Both",
                 age == "Age-standardized",
                 cause == "Chronic respiratory diseases",
                 rei == "Air pollution",
                 metric == "Rate",
-                year == "2021"
+                year == "1990"
+        ) %>%
+        select(location, val, upper, lower)
+
+# Load world map
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Standardize country names using countrycode
+
+## First, create ISO3 codes for GBD data
+df_deaths_clean_2021$iso3 <- countrycode(df_deaths_clean_2021$location,
+                                        origin = "country.name",
+                                        destination = "iso3c")
+
+df_deaths_clean_1990$iso3 <- countrycode(df_deaths_clean_1990$location,
+                                         origin = "country.name",
+                                         destination = "iso3c")
+## Create ISO3 codes for world map
+world$iso3 <- countrycode(world$name,
+                          origin = "country.name",
+                          destination = "iso3c")
+
+## Check unmatched countries
+unmatched <- df_deaths_clean_2021 %>%
+        filter(!iso3 %in% world$iso3) %>% # Keep all countries whose ISO3 code is not in the world dataset.
+        select(location, iso3)
+#unmatched$location
+### The non correlation with the iso3 code is from the world dataset (bc df does not have Null values associated)
+
+## Fix known mismatches manually
+world$name[world$name == "Micronesia"] <- "Micronesia (Federated States of)"
+world$name[world$name == "St. Vin. and Gren."] <- "Saint Vincent and the Grenadines"
+world$name[world$name == "U.S. Virgin Is."] <- "United States Virgin Islands "
+world$name[world$name == "S. Sudan"] <- "South Sudan "
+### Tokelau cannot be matched
+
+## Recalculate ISO3 codes after fixing names
+world$iso3 <- countrycode(world$name,
+                          origin = "country.name",
+                          destination = "iso3c")
+
+## Check unmatched countries AGAIN
+unmatched <- df_deaths_clean_2021 %>%
+        filter(!iso3 %in% world$iso3) %>%
+        select(location)
+#unmatched$location
+
+# Merge GBD data with world map
+world_data_2021 <- world %>%
+        left_join(df_deaths_clean_2021, by = "iso3")
+world_data_1990 <- world %>%
+        left_join(df_deaths_clean_1990, by = "iso3")
+
+# Determine the common range across both datasets
+fill_limits <- range(c(world_data_1990$val, world_data_2021$val), na.rm = TRUE)
+
+# Plot DEATHS 2021
+p2021 <- ggplot(data = world_data_2021) +
+        geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
+        scale_fill_viridis_c(
+                option = "inferno", 
+                na.value = "lightgrey", 
+                direction = -1,
+                name = "Deaths/100k", 
+                limits = fill_limits
+        ) +
+        labs(
+                title = "Global health impact of air pollution on CRD in 2021",
+                subtitle = "Death rates per 100,000 population",
+                caption = "Data Source: GBD 2021"
+        ) +
+        theme_minimal() +
+        theme(
+                plot.title = element_text(size = 20, face = "bold"),
+                plot.subtitle = element_text(size = 14),
+                legend.title = element_text(size = 12),
+                legend.text = element_text(size = 10)
         )
-gbd_ylls <- gbd_total %>% 
-        filter(
-                measure == "YLLs (Years of Life Lost)",
-                location %in% gbd_data11$location,
-                sex == "Both",
-                age == "Age-standardized",
-                cause == "Chronic respiratory diseases",
-                rei == "Air pollution",
-                metric == "Rate",
-                year == "2021"
+
+# Plot DEATHS 1990
+p1990 <- ggplot(data = world_data_1990) +
+        geom_sf(aes(fill = val), color = "grey40", size = 0.1) +
+        scale_fill_viridis_c(
+                option = "inferno", 
+                na.value = "lightgrey", 
+                direction = -1,
+                name = "Deaths/100k", 
+                limits = fill_limits
+        ) +
+        labs(
+                title = "Global health impact of air pollution on CRD in 1990",
+                subtitle = "Death rates per 100,000 population",
+                caption = "Data Source: GBD 2021"
+        ) +
+        theme_minimal() +
+        theme(
+                plot.title = element_text(size = 20, face = "bold"),
+                plot.subtitle = element_text(size = 14),
+                legend.title = element_text(size = 12),
+                legend.text = element_text(size = 10)
         )
-# Ordenar as regiões por valor
-gbd_deaths<-gbd_deaths %>% arrange(desc(val))
-gbd_dalys<-gbd_dalys %>% arrange(desc(val))
-gbd_ylds<-gbd_ylds %>% arrange(desc(val))
-gbd_ylls<-gbd_ylls %>% arrange(desc(val))
-# Fazer tabela
-cbind(
-  Deaths = as.character(gbd_deaths$location),
-  DALYs = as.character(gbd_dalys$location),
-  YLDs = as.character(gbd_ylds$location),
-  YLLs = as.character(gbd_ylls$location)
-)
+
+# Common theme to make things consistent
+base_theme <- theme_minimal() +
+        theme(
+                plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+                legend.title = element_text(size = 12),
+                legend.text = element_text(size = 10),
+                axis.text = element_blank(),
+                axis.title = element_blank(),
+                panel.grid = element_blank()
+        )
+
+# --- Plot for 1990 (no legend, simple title) ---
+p1990 <- ggplot(data = world_data_1990) +
+        geom_sf(
+                aes(fill = val), 
+                color = "grey40", 
+                size = 0.1
+        ) +
+        scale_fill_viridis_c(
+                option = "inferno", 
+                na.value = "lightgrey",
+                direction = -1, 
+                name = "Deaths/100k", 
+                limits = fill_limits
+        ) +
+        labs(title = "1990") +
+        base_theme +
+        theme(legend.position = "none")  # remove legend
+
+# --- Plot for 2021 (keep legend) ---
+p2021 <- ggplot(data = world_data_2021) +
+        geom_sf(
+                aes(fill = val), 
+                color = "grey40", 
+                size = 0.1
+        ) +
+        scale_fill_viridis_c(
+                option = "inferno", 
+                na.value = "lightgrey",
+                direction = -1, 
+                name = "Deaths/100k", 
+                limits = fill_limits
+        ) +
+  labs(title = "2021") +
+  base_theme
+
+# --- Combine side by side ---
+combined <- p1990 + p2021 +
+        plot_annotation(
+                title = "Global health impact of air pollution on CRD",
+                subtitle = "Death rates per 100,000 population",
+                caption = "Data Source: GBD 2021"
+        ) &
+        theme(
+                plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+                plot.subtitle = element_text(size = 14, hjust = 0.5)
+        )
+print(combined)
 ```
-```{r}
+
+### Country ranking by all measures in 2021
+
+
+```{r,warning=FALSE}
 # Filtrar linhas
 gbd_filtered <- gbd_total %>% 
         filter(
@@ -337,108 +741,240 @@ gbd_filtered %>%
         )
 ```
 
-### Existe correlação entre o Índice Sociodemográfico (SDI) e a carga de doença?
+### Top 10 countries by air pollution death rates on CRD
+
+
+#### Comparison between 1990 and 2021
+
 
 ```{r}
-# Filtrar linhas
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths" & 
-                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-                sex == "Both" & 
-                age == "Age-standardized" & 
-                cause == "Chronic respiratory diseases" & 
-                rei == "Air pollution" & 
-                metric == "Rate" & 
-                year == "2021"
+# Top 10 highest
+top10_high_2021 <- df_deaths_clean_2021 %>%
+        arrange(desc(val)) %>%
+        slice_head(n = 10)
+top10_high_1990 <- df_deaths_clean_1990 %>%
+        arrange(desc(val)) %>%
+        slice_head(n = 10)
+
+# Top 10 lowest
+top10_low_2021 <- df_deaths_clean_2021 %>%
+        arrange(val) %>%
+        slice_head(n = 10)
+top10_low_1990 <- df_deaths_clean_1990 %>%
+        arrange(val) %>%
+        slice_head(n = 10)
+
+# Combine both into one table
+top10_high_table <- bind_rows(
+        top10_high_2021 %>% mutate(year = "2021"),
+        top10_high_1990 %>% mutate(year = "1990")
+        ) %>%
+        select(year, location, val, upper, lower)
+top10_low_table <- bind_rows(
+        top10_low_2021 %>% mutate(year = "2021"),
+        top10_low_1990 %>% mutate(year = "1990")
+        ) %>%
+        select(year, location, val, upper, lower)
+
+# Make sure year is a factor so colors are consistent
+top10_high_table$year <- factor(top10_high_table$year, levels = c("1990", "2021"))
+top10_low_table$year <- factor(top10_low_table$year, levels = c("1990", "2021"))
+
+# Define a consistent color mapping for years
+year_colors <- c("1990" = "#003f5c", "2021" = "#ffa600")
+
+# --- Base theme ---
+base_theme2 <- theme_minimal() +
+        theme(
+                plot.title = element_text(size = 14, face = "bold"),
+                axis.title.y = element_blank(),
+                axis.title.x = element_text(size = 12),
+                axis.text = element_text(size = 10),
+                legend.title = element_text(size = 12),
+                legend.text = element_text(size = 10)
         )
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = factor(location,
-                levels = c("Low SDI", "Low-middle SDI", "Middle SDI","High-middle SDI", "High SDI")), 
-                y = val)) +
-        geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
-        geom_errorbar( 
-                aes(x = factor(location,
-                levels = c("Low SDI", "Low-middle SDI", "Middle SDI", "High-middle SDI", "High SDI")),
-                ymin=lower, 
-                ymax=upper), 
-                width=0.4, 
-                colour="orange", 
-                alpha=0.9, 
-                size=0.5) + 
+
+# --- Lollipop HIGH ---
+p_high <- top10_high_table %>% 
+        ggplot(aes(x = reorder(location, val), y = val, color = year)) +
+        geom_point(size = 4) +
+        geom_segment(
+                aes(x = location, xend = location, y = 0, yend = val), 
+                linewidth = 1
+        ) +
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
+                width = 0.2
+        ) +
+        coord_flip() +
+        scale_color_manual(values = year_colors, name = "Year") +
+        labs(
+                title = "Highest", 
+                y = "Deaths/100k"
+        ) +
+        base_theme2 +
+        theme(legend.position = "none")  # hide legend for this plot
+
+# --- Lollipop LOW ---
+p_low <- top10_low_table %>% 
+        ggplot(aes(x = reorder(location, -val), y = val, color = year)) +
+        geom_point(size = 4) +
+        geom_segment(
+                aes(x = location, xend = location, y = 0, yend = val), 
+                linewidth = 1
+        ) +
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
+                width = 0.2) +
+        coord_flip() +
+        scale_color_manual(values = year_colors, name = "Year") +
+        labs(
+                title = "Lowest", 
+                y = "Deaths/100k"
+        ) +
+        base_theme2  # keep legend here
+
+# --- Combine side by side ---
+combined <- p_high + p_low +
+        plot_annotation(
+                title = "Top 10 countries by air pollution death rates on CRD",
+                subtitle = "Comparison between 1990 and 2021",
+                caption = "Data Source: GBD 2021"
+        ) &
+        theme(
+                plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+                plot.subtitle = element_text(size = 14, hjust = 0.5)
+        )
+combined
+```
+
+## Impact of Air Pollution on CRD by Health System Type (2021)
+
+
+```{r}
+# Filter and summarise for Rate:
+df_healthsystems <- gbd_total %>%
+        filter(
+                location %in% health_systems,
+                rei == "Air pollution",
+                metric == "Rate",       # <- ensure we are using Rate, not Number
+                cause == "Chronic respiratory diseases",
+                age == "Age-standardized",
+                sex == "Both"
+        ) %>%
+        select(measure, location, val, upper, lower)
+
+# Make sure your health_systems are ordered in the plot
+df_healthsystems <- df_healthsystems %>%
+        mutate(location = factor(location, levels = c(
+                "Minimal Health System",
+                "Limited Health System",
+                "Basic Health System",
+                "Advanced Health System"
+        )))
+
+# Ordered measure
+df_healthsystems$measure <- factor(df_healthsystems$measure,
+                                     levels = c("Deaths",
+                                        "DALYs (Disability-Adjusted Life Years)",
+                                        "YLLs (Years of Life Lost)",
+                                        "YLDs (Years Lived with Disability)")
+                                )
+
+# Plot
+df_healthsystems %>% 
+        ggplot(aes(x = location, y = val, fill = location)) +
+        geom_col(color = "black", width = 0.7) +
+        geom_errorbar(
+                aes(ymin = lower, ymax = upper), 
+                width = 0.18, 
+                size = 0.6, 
+                color = "black"
+        ) +
+        scale_fill_manual(values = pal) +
+        scale_y_continuous() +
+        facet_wrap(~ measure, scales = "free_x") +
         coord_flip() +
         labs(
-                title = "Taxa de Mortes por SDI",
-                x = "Local", 
-                y = "Taxa",
-                caption = "Data source: GBD 2021") +
-        theme_minimal(base_size = 18)
+                title = "Impact of Air Pollution on CRD by Health System Type (2021)",
+                subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
+                x = "",
+                y = "Rate per 100,000",
+                caption = "Data Source: GBD 2021"
+        ) +
+        theme_minimal(base_size = 13) +
+        theme(
+                legend.position = "none",
+                strip.text = element_text(face = "bold", size = 20),
+                plot.title = element_text(face = "bold", size = 24),
+                plot.subtitle = element_text(size = 16),
+                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
+                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
+                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
+                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
+        )
 ```
+
+## Temporal trends
+
 
 ```{r}
-# Filtrar linhas
-gbd_filtered <- gbd_total %>% 
+# Combine the four metrics into one dataset
+global_summary_all <- gbd_total %>%
         filter(
-                measure == "Deaths" & 
-                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-                sex == "Both" & 
-                age == "Age-standardized" & 
-                cause == "All causes" & 
-                rei == "Air pollution" & 
-                metric == "Rate"
-        )
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = year,y = val,color=factor(location,
-                levels = c("Low SDI", "Low-middle SDI", "Middle SDI","High-middle SDI", "High SDI")))) +
-        geom_line(stat = "identity", width = 0.6, fill = "steelblue") +
-        geom_ribbon(aes(ymin = lower, ymax = upper, fill = location, group = location),
-              alpha = 0.18, colour = NA) +
-        #geom_errorbar( aes(x = year,
-                #ymin=lower, ymax=upper), 
-                #width=0.4, colour="orange", alpha=0.9, size=0.5) +
-        labs(
-                title = "Taxa de Mortes por ano por SDI",
-                x = "Local", 
-                y = "Taxa", 
-                color="Nível de SDI"
+                measure %in% c("Deaths",
+                                "DALYs (Disability-Adjusted Life Years)",
+                                "YLLs (Years of Life Lost)",
+                                "YLDs (Years Lived with Disability)"),
+                location == "Global",
+                rei == "Air pollution",
+                metric == "Rate",
+                cause == "Chronic respiratory diseases",
+                age == "All ages",
+                sex == "Both"
+        ) %>%
+        select(measure, year, val, upper, lower)
+# Ordered measure
+global_summary_all$measure <- factor(global_summary_all$measure,
+                                     levels = c("Deaths",
+                                                "DALYs (Disability-Adjusted Life Years)",
+                                                "YLLs (Years of Life Lost)",
+                                                "YLDs (Years Lived with Disability)")
+)
+# Plot
+global_summary_all %>% 
+        ggplot(aes(x = year, y = val, color = measure, fill = measure)) +
+        geom_ribbon(
+                aes(ymin = lower, ymax = upper), 
+                alpha = 0.2, 
+                color = NA
         ) +
-        theme_minimal()
+        geom_line(size = 1.2) +
+        geom_point(size = 2) +
+        facet_wrap(~ measure, scales = "free_y") +
+        labs(
+                title = "Global burden attributable to air pollution on CRD (1990–2021)",
+                x = "Year",
+                y = "Rate",
+                color = "Measure",
+                fill = "Measure",
+                caption = "Data Source: GBD 2021"
+        ) +
+        scale_y_continuous(labels = scientific_format(digits = 2)) +
+        theme_minimal(base_size = 13) +
+        theme(
+                axis.title.x = element_text(size = 14, face = "bold"),
+                axis.title.y = element_text(size = 14, face = "bold"),
+                axis.text.x  = element_text(size = 14),   # x-axis tick labels
+                axis.text.y  = element_text(size = 14),   # y-axis tick labels
+                plot.title   = element_text(size = 20, face = "bold"),
+                strip.text   = element_text(size = 16, face = "bold"),
+                legend.position = "none"
+        )
 ```
 
+## Age and Gender
 
-### Como variam os impactos por sexo (boxplot/violinplot) e faixa etária (barras/histograma)?
-
-```{r}
-# Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths" & 
-                location == "Global" & 
-                sex == "Both" & 
-                !age %in% c("All ages", "7-27 days", "Age-standardized") &
-                cause == "All causes" & 
-                rei == "Air pollution" & 
-                metric == "Rate" & 
-                year == "2021"
-        )
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = age, y = val)) +
-        geom_bar(stat = "identity", width = 0.6, fill = "steelblue") +
-        geom_errorbar( aes(x=age, ymin=lower, ymax=upper), 
-                width=0.4, 
-                colour="orange", 
-                alpha=0.9, 
-                size=0.5) + 
-        labs(
-                title = "Taxa de Mortes por idade",
-                x = "Idade", 
-                y = "Taxa de mortes"
-        ) +
-        theme_minimal()
-```
 
 ```{r}
 # Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
@@ -471,86 +1007,7 @@ gbd_filtered %>%
         theme_minimal() +
         theme(legend.position = "right")
 ```
-```{r}
-# Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths" & 
-                location %in% c("Low SDI","Low-middle SDI","Middle SDI","High-middle SDI","High SDI") & 
-                sex == "Both" &
-                !age %in% c("All ages", "7-27 days", "Age-standardized") &
-                cause == "All causes" & 
-                rei == "Particulate matter pollution" & 
-                metric == "Rate" & 
-                year == "2021"
-        ) %>%
-        mutate(location = fct_reorder(location, val))
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = age, y = val, fill = location)) +  # Adicionado fill = sex para agrupamento
-        geom_bar(
-                stat = "identity", 
-                width = 0.6, 
-                position = position_dodge(width = 0.6),
-                alpha = 0.5,
-        ) +  # position_dodge para barras lado a lado
-        geom_errorbar(aes(ymin = lower, ymax = upper), 
-                position = position_dodge(width = 0.6),  # Alinhar barras de erro com as barras dodged
-                width = 0.4, 
-                colour = "orange", 
-                alpha = 0.9, 
-                size = 0.5
-        ) + 
-        labs(
-                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", 
-                y = "Taxa de mortes", 
-                fill = "SDI"
-        ) +
-        theme_minimal() +
-        theme(legend.position = "right")
-```
 
-
-```{r}
-# Filtrar linhas
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths" & 
-                location == "Global" & 
-                sex %in% c("Male", "Female") &
-                age %in% c("Age-standardized") &
-                cause == "All causes" & 
-                !rei %in% c("Air pollution","All risk factors","Particulate matter pollution") & 
-                metric == "Rate"
-        ) %>%
-        mutate(year = factor(year, levels = c(1990, 2000, 2010, 2020, 2021)))
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = year, y = val, fill = rei)) +
-        geom_bar(
-                stat = "identity", 
-                width = 0.7, 
-                position = position_dodge(width = 0.8)
-        ) +  # position_dodge para barras lado a lado
-        geom_errorbar(
-                aes(ymin = lower, ymax = upper), 
-                position = position_dodge(width = 0.8),  # Alinhar barras de erro com as barras dodged
-                width = 0.4, 
-                colour = "orange", 
-                alpha = 0.9, size = 0.5
-        ) +
-        facet_grid(sex ~ ., scales = "fixed") +
-        labs(
-                title = "Taxa de Mortes por Idade e Sexo (Poluição do Ar, Global, 2021)",
-                x = "Idade", 
-                y = "Taxa de mortes", 
-                fill = "Fator de risco"
-        ) +
-        theme_minimal() +
-        theme(legend.position = "right")
-```
-O Nitrogen dioxide pollution não aparece porque só tem a medição DALYs.
 
 # Discussão
 
