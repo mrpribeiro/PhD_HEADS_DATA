@@ -1,7 +1,7 @@
-######################################################################################################################################
-# What are the global burden temporal trends attributable to air pollution on chronical respiratory diseases between 1990 and 2021?? #
-######################################################################################################################################
-
+######################################################################
+# What are the global burden temporal trends attributable to air     #
+# pollution on chronical respiratory diseases between 1990 and 2021? #
+######################################################################
 # Load packages
 library(dplyr)
 library(ggplot2)
