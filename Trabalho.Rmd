@@ -476,7 +476,6 @@ global_DALYS_year %>%
 
 ### Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
 
-
 ```{r}
 # Filter and select relevant columns for deaths in 2021
 df_deaths_clean_2021 <- gbd_total %>%
@@ -775,60 +774,81 @@ combined
 
 ```
 
-## Impact of Air Pollution on CRD by Health System Type (2021)
+## Impact of Air Pollution on chronic respiratory disease by health system type in 2021
 
 ```{r}
-# Filter and summarise for Rate:
-df_healthsystems <- gbd_total %>%
-        filter(
-                location %in% health_systems,
-                rei == "Air pollution",
-                metric == "Rate",       # <- ensure we are using Rate, not Number
-                cause == "Chronic respiratory diseases",
-                age == "Age-standardized",
-                sex == "Both"
-        ) %>%
-        select(measure, location, val, upper, lower)
+# Prepare data
+df_healthsystems <- gbd_data %>%
+  filter(
+    location %in% health_systems,
+    rei == "Air pollution",
+    metric == "Rate",
+    cause == "Chronic respiratory diseases",
+    age == "Age-standardized",
+    sex == "Both"
+  ) %>%
+  select(measure, location, val, upper, lower) %>%
+  mutate(location = factor(location, levels = c(
+    "Minimal Health System",
+    "Limited Health System",
+    "Basic Health System",
+    "Advanced Health System"
+  )))
 
-# Make sure your health_systems are ordered in the plot
-df_healthsystems <- df_healthsystems %>%
-        mutate(location = factor(location, levels = c(
-                "Minimal Health System",
-                "Limited Health System",
-                "Basic Health System",
-                "Advanced Health System"
-        )))
+# Flexible plotting function
+make_plot <- function(data, measure_label, x_label) {
+  data %>%
+    filter(measure == measure_label) %>%
+    ggplot(aes(y = location, x = val, fill = location)) +
+    geom_col(color = "black", width = 0.7) +
+    geom_errorbar(aes(xmin = lower, xmax = upper),
+                  width = 0.3, size = 0.6, color = "black") +
+    scale_fill_manual(values = pal) +
+    labs(
+      title = measure_label,
+      y = NULL,
+      x = x_label
+    ) +
+    theme_minimal(base_size = 10) +
+    theme(
+      plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+      legend.position = "none",
+      axis.text.y = element_text(size = 10, face = "bold"),
+      axis.text.x = element_text(size = 10)
+    )
+}
 
-# Ordered measure
-df_healthsystems$measure <- factor(df_healthsystems$measure,
-                                     levels = c("Deaths",
-                                        "DALYs (Disability-Adjusted Life Years)",
-                                        "YLLs (Years of Life Lost)",
-                                        "YLDs (Years Lived with Disability)")
-                                )
+# Individual plots
+p_deaths <- make_plot(df_healthsystems,
+                      "Deaths",
+                      "Deaths/100k")
 
-# Plot
-df_healthsystems %>% 
-        ggplot(aes(x = location, y = val, fill = location)) +
-        geom_col(color = "black", width = 0.7) +
-        geom_errorbar(
-                aes(ymin = lower, ymax = upper), 
-                width = 0.18, 
-                size = 0.6, 
-                color = "black"
-        ) +
-        scale_fill_manual(values = pal) +
-        scale_y_continuous() +
-        facet_wrap(~ measure, scales = "free_x") +
-        coord_flip() +
-        labs(
-                title = "Impact of Air Pollution on CRD by Health System Type (2021)",
-                subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
-                x = "",
-                y = "Rate per 100,000",
-                caption = "Data Source: GBD 2021"
-        ) +
-        geral_theme
+p_dalys  <- make_plot(df_healthsystems,
+                      "DALYs (Disability-Adjusted Life Years)",
+                      "DALYs/100k")
+
+p_ylls   <- make_plot(df_healthsystems,
+                      "YLLs (Years of Life Lost)",
+                      "YLLs/100k")
+
+p_ylds   <- make_plot(df_healthsystems,
+                      "YLDs (Years Lived with Disability)",
+                      "YLDs/100k")
+
+# Combine into a 2×2 grid
+combined_health <- (p_deaths | p_dalys) /
+  (p_ylls | p_ylds) +
+  plot_annotation(
+    title = "Impact of Air Pollution on Chronic Respiratory Diseases by Health System Type (2021)",
+    caption = "Data Source: Global Burden of Disease 2021",
+    theme = theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      plot.caption = element_text(size = 8, face = "italic", hjust = 1)
+    )
+  )
+
+# Show final figure
+combined_health
 ```
 
 ## Temporal trends
