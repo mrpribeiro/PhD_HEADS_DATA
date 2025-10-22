@@ -476,6 +476,18 @@ global_DALYS_year %>%
 
 ### Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
 
+Between 1990 and 2021, the global distribution of deaths attributable to
+air pollution in CRDs showed substantial geographical variation. In
+1990, the highest mortality rates were concentrated in East Asia,
+particularly China, and parts of North Africa, exceeding 160 deaths per
+100,000 population. By 2021, mortality had decreased in East Asia but
+increased markedly in South Asia, with India, Nepal, and Bangladesh
+emerging as the most affected countries. Conversely, high-income
+regions, including North America, Western Europe, and Oceania,
+consistently recorded the lowest mortality (\<40 deaths per 100,000).
+Overall, the data indicate a shift in disease burden from East to South
+Asia, alongside a modest global decline in mortality rates.
+
 ```{r}
 # Filter and select relevant columns for deaths in 2021
 df_deaths_clean_2021 <- gbd_total %>%
@@ -527,7 +539,7 @@ world$iso3 <- countrycode(world$name,
 unmatched <- df_deaths_clean_2021 %>%
         filter(!iso3 %in% world$iso3) %>% # Keep all countries whose ISO3 code is not in the world dataset.
         select(location, iso3)
-unmatched$location
+#unmatched$location
 ### The non correlation with the iso3 code is from the world dataset (because df does not have Null values associated)
 
 ## Fix known mismatches manually
@@ -546,7 +558,7 @@ world$iso3 <- countrycode(world$name,
 unmatched <- df_deaths_clean_2021 %>%
         filter(!iso3 %in% world$iso3) %>%
         select(location)
-unmatched$location
+#unmatched$location
 
 # Merge GBD data with world map
 world_data_2021 <- world %>%
@@ -667,6 +679,17 @@ gbd_filtered %>%
 ```
 
 ### Top 10 countries by air pollution death rates on chronic respiratory diseases
+
+At the country level, China, Nepal, and Papua New Guinea recorded the
+highest mortality rates in 2021, exceeding 100 deaths per 100,000
+population. Other high-burden countries included India, Bangladesh, and
+Myanmar, reflecting the concentration of risk in South and East Asia.
+The lowest mortality rates (\<2 deaths per 100,000) were observed in
+high-income nations such as Finland, Sweden, New Zealand, and Australia,
+as well as several Caribbean and Pacific islands. Between 1990 and 2021,
+a decline in mortality was observed in several high-burden countries,
+particularly China, while South Asian nations showed limited
+improvement.
 
 ```{r}
 # Top 10 highest death rate countries
@@ -994,7 +1017,7 @@ gbd_filtered %>%
         geral_theme
 ```
 
-# Discustion
+# Discussion
 
 Our findings align closely with the study by Dhimal et al., which
 emphasized the extensive impact of both ambient and household air
