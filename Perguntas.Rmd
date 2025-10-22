@@ -8,23 +8,11 @@ date: "2025-09-30"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-1. Impacto Geral da Poluição do Ar
-*A poluição do ar foi responsável por quantas mortes/DALYs em todo o mundo (2021)? 
+
+*A poluição do ar foi responsável por quantas mortes (doenças respiratórias/all causes)
+/DALYs em todo o mundo (2021)? 
+*Tipo de poluição indoor vs outdoor. Tipo de poluição por SDI.
 *E em que zonas teve maior impacto? (mapa?) 
 *Em que tipo de Sistema de saúde? 
-
-2. Doenças Respiratórias Específicas
-*Qual é a contribuição da poluição do ar para doenças como:
-        -Doença Pulmonar Obstrutiva Crónica (DPOC)
-        -Asma
-        -Infeções respiratórias inferiores (ex: pneumonia)
-        -Cancro do pulmão
-
-3. Tendências Temporais
-*Como evoluiu a carga de doenças respiratórias atribuíveis à poluição do ar entre 1990 e 2021?
-*Houve melhorias em países com políticas ambientais mais rigorosas?
-
-4. Disparidades Regionais e Sociais
-*Quais regiões têm maior carga de doenças respiratórias atribuíveis à poluição do ar?
-*Existe correlação entre o Índice Sociodemográfico (SDI) e a carga de doença?
-*Como variam os impactos por sexo (boxplot/violinplot) e faixa etária (barras/histograma)?
+*Tendências Temporais entre 1990 e 2021?
+*Como variam os impactos por sexo e faixa etária?
