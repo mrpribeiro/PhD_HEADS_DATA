@@ -1,11 +1,10 @@
-###########################################################################################################
-# How do deaths and DALYs attributable to air pollution differ across health systems of varying strength? #
-###########################################################################################################
+############################################################################################################################
+# How does the burden of air pollution differs on chronical respiratory diseases across health systems of varying strength #
+############################################################################################################################
 library(readxl)
 library(dplyr)
 library(ggplot2)
-library(scales)
-library(forcats)
+library(patchwork)
 
 # Read csv files (Import data)
 gbd_data <- read.csv("IHME-GBD_2021_DATA-840155c6-1.csv")
@@ -13,26 +12,20 @@ gbd_data <- read.csv("IHME-GBD_2021_DATA-840155c6-1.csv")
 # Finding unique locations
 unique(gbd_data$location)
 
-# Define the health system categories
-health_systems <- c("Advanced Health System",
-                    "Basic Health System",
-                    "Limited Health System",
-                    "Minimal Health System")
-
-# Filter and summarise for Rate:
+# --- Prepare data ---
 df_healthsystems <- gbd_data %>%
   filter(
-    location %in% health_systems,
+    location %in% c("Advanced Health System",
+                    "Basic Health System",
+                    "Limited Health System",
+                    "Minimal Health System"),
     rei == "Air pollution",
-    metric == "Rate",       # <- ensure we are using Rate, not Number
+    metric == "Rate",
     cause == "Chronic respiratory diseases",
     age == "Age-standardized",
     sex == "Both"
   ) %>%
-  select(measure, location, val, upper, lower)
-
-# Make sure your health_systems are ordered in the plot
-df_healthsystems <- df_healthsystems %>%
+  select(measure, location, val, upper, lower) %>%
   mutate(location = factor(location, levels = c(
     "Minimal Health System",
     "Limited Health System",
@@ -40,15 +33,7 @@ df_healthsystems <- df_healthsystems %>%
     "Advanced Health System"
   )))
 
-# Ordered measure
-df_healthsystems$measure <- factor(df_healthsystems$measure,
-                                     levels = c("Deaths",
-                                                "DALYs (Disability-Adjusted Life Years)",
-                                                "YLLs (Years of Life Lost)",
-                                                "YLDs (Years Lived with Disability)")
-)
-
-# Custom palette: worse -> better
+# Color palette (worse → better)
 pal <- c(
   "Minimal Health System"   = "#b2182b",
   "Limited Health System"   = "#fdae61",
@@ -56,111 +41,59 @@ pal <- c(
   "Advanced Health System"  = "#1a9850"
 )
 
-# Plot
-ggplot(df_healthsystems, aes(x = location, y = val, fill = location)) +
-  geom_col(color = "black", width = 0.7) +
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
-  scale_fill_manual(values = pal) +
-  scale_y_continuous() +
-  facet_wrap(~ measure, scales = "free_x") +
-  coord_flip() +
-  labs(
-    title = "Impact of Air Pollution on CRD by Health System Type (2021)",
-    subtitle = "Deaths, DALYs, YLLs & YLDS (per 100,000 population) with 95% uncertainty intervals",
-    x = "",
-    y = "Rate per 100,000",
-    caption = "Data Source: GBD 2021"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    legend.position = "none",
-    strip.text = element_text(face = "bold", size = 20),
-    plot.title = element_text(face = "bold", size = 24),
-    plot.subtitle = element_text(size = 16),
-    axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
-    axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
-    axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
-    axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
-  )
-
-
-save_plot <- function(plot, filename){
-  ggsave(filename, plot = plot, width = 12, height = 6, dpi = 300)
+# --- Flexible plotting function ---
+make_plot <- function(data, measure_label, x_label) {
+  data %>%
+    filter(measure == measure_label) %>%
+    ggplot(aes(y = location, x = val, fill = location)) +
+    geom_col(color = "black", width = 0.7) +
+    geom_errorbar(aes(xmin = lower, xmax = upper),
+                  width = 0.3, size = 0.6, color = "black") +
+    scale_fill_manual(values = pal) +
+    labs(
+      title = measure_label,
+      y = NULL,
+      x = x_label
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+      legend.position = "none",
+      axis.text.y = element_text(size = 12, face = "bold"),
+      axis.text.x = element_text(size = 11)
+    )
 }
-save_plot(A, "healthsystems4.png")
 
+# --- Individual plots
+p_deaths <- make_plot(df_healthsystems,
+                      "Deaths",
+                      "Deaths/100k")
 
-# Separate data
-df_deaths <- df_healthsystems %>% filter(measure == "Deaths")
-df_dalys  <- df_healthsystems %>% filter(measure == "DALYs (Disability-Adjusted Life Years)")
+p_dalys  <- make_plot(df_healthsystems,
+                      "DALYs (Disability-Adjusted Life Years)",
+                      "DALYs/100k")
 
-# DEATHS
-ggplot(df_deaths, aes(x = location, y = val, fill = location)) +
-  geom_col(color = "black", width = 0.7) +
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
-  geom_text(aes(label = round(val, 0)), 
-            hjust = -0.1, vjust = -0.4,size = 4) +
-  scale_fill_manual(values = pal) +
-  scale_y_continuous() +
-  coord_flip() +
-  labs(
-    title = "Deaths rate attributable to air pollution by Health System type (2021)",
-    x = "",
-    y = "Death/100k",
-    caption = "Data Source: Global Burden of Disease 2021"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    legend.position = "none",
-    plot.title = element_text(face = "bold", size=18)
+p_ylls   <- make_plot(df_healthsystems,
+                      "YLLs (Years of Life Lost)",
+                      "YLLs/100k")
+
+p_ylds   <- make_plot(df_healthsystems,
+                      "YLDs (Years Lived with Disability)",
+                      "YLDs/100k")
+
+# --- Combine into a 2×2 grid ---
+combined_health <- (p_deaths | p_dalys) /
+  (p_ylls | p_ylds) +
+  plot_annotation(
+    title = "Impact of Air Pollution on Chronic Respiratory Diseases by Health System Type (2021)",
+    caption = "Data Source: Global Burden of Disease 2021",
+    theme = theme(
+      plot.title = element_text(size = 22, face = "bold", hjust = 0.5),
+      plot.caption = element_text(size = 12, face = "italic", hjust = 1)
+    )
   )
 
-# DALYs
-ggplot(df_dalys, aes(x = location, y = val, fill = location)) +
-  geom_col(color = "black", width = 0.7) +
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.18, size = 0.6, color = "black") +
-  geom_text(aes(label = round(val, 0)), 
-            hjust = -0.2, vjust = -1.5,size = 4) +
-  scale_fill_manual(values = pal) +
-  scale_y_continuous() +
-  coord_flip() +
-  labs(
-    title = "DALYs rate attributable to air pollution by Health System type (2021)",
-    x = "",
-    y = "DALYs/100k",
-    caption = "Data Source: Global Burden of Disease 2021"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    legend.position = "none",
-    plot.title = element_text(face = "bold", size=18)
-  )
+# Show final figure
+combined_health
 
-## General trend
-# 
-# DALYs rates are highest in Minimal and Limited Health Systems and lowest in Advanced Health Systems.
-# This suggests a strong association between health system strength and the burden of air pollution. Stronger health systems seem to mitigate the impact of air pollution on population health.
-# 
-##  Deaths vs. DALYs
-# 
-# The difference between health system types is more pronounced in DALYs, showing that weaker systems not only see more deaths but also more years of life lost due to disability.
-# 
-## Uncertainty intervals
-# 
-# The error bars (upper and lower 95% uncertainty intervals) indicate how confident the estimates are.
-# 
-# Minimal and Limited Health Systems have wider intervals, reflecting more uncertainty, possibly due to less data availability or reporting quality.
-# Advanced systems have narrower intervals, reflecting more reliable data.
-# 
-## Relative differences
-# 
-# You can quantify relative risk:
-# Minimal vs. Advanced Health System: DALYs rate is roughly 3–4 times higher.
-# Death rate is roughly 2–3 times higher.
-# This highlights that improving health system strength could substantially reduce the burden of air pollution.
-# 
-## Key insights
-# 
-# Stronger health systems (Advanced, Basic) have lower air pollution-related death and disability rates.
-# Weaker health systems (Limited, Minimal) bear the highest relative burden.
-# DALYs provide a more comprehensive measure of health impact than deaths alone.
+

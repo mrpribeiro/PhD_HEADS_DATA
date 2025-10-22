@@ -4,14 +4,23 @@
 #####################################################################################
 
 # Load packages
-library(rnaturalearth)
+# Core tidyverse tools
+library(dplyr)        # for filter(), select(), mutate(), arrange(), bind_rows(), etc.
+library(ggplot2)      # for all plotting (geom_sf, geom_point, geom_segment, etc.)
+
+# Spatial and geographic data handling
+library(rnaturalearth)  # for ne_countries()
 library(rnaturalearthdata)
-library(sf)
-library(ggplot2)
-library(dplyr)
-library(countrycode)
-library(viridis)
-library(patchwork)
+library(sf)             # for working with spatial features (used by rnaturalearth + ggplot2)
+
+# Data merging and standardizing country names
+library(countrycode)    # for converting country names to ISO3 codes
+
+# Color scales for maps
+library(viridis)        # for scale_fill_viridis_c()
+
+# Combining plots neatly
+library(patchwork)      # for combining ggplots side by side with +, /, plot_layout(), plot_annotation()
 
 # Load GBD data
 gbd_data_2021 <- read.csv("IHME-GBD_2021_DATA-ce582a59-1.csv")
