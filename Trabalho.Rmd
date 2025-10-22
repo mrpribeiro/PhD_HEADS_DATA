@@ -13,76 +13,23 @@ csl: apa7.csl
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,message=FALSE, warning=FALSE, cache=TRUE)
+knitr::opts_chunk$set(echo = FALSE,message=FALSE, warning=FALSE, cache=TRUE, fig.width=10, fig.height=6)
 ```
 
 # Abstract
 
-Este trabalho analisa os impactos da poluição do ar na saúde pública utilizando 
-dados do Global Burden of Disease (GBD)[@bennitt_global_nodate]. Através de técnicas de preparação e 
-análise exploratória de dados (EDA), são identificadas tendências, padrões e 
-potenciais problemas de qualidade nos dados.
+This study investigates the global impact of air pollution on chronic respiratory diseases (CRDs) using data from the Global Burden of Disease (GBD) 2021. Through exploratory data analysis, we examine the contribution of different types of air pollutants—ambient particulate matter, household air pollution, ozone, and nitrogen dioxide—to CRD-related mortality and disability. In 2021, CRDs accounted for 22.1% of all deaths and 29.4% of all years lived with disability (YLDs) attributable to air pollution. The burden is disproportionately higher in countries with low and low-middle Socio-demographic Index (SDI), and in regions with limited or minimal health system capacity. While mortality rates have declined over time, the chronic health impact remains significant, with a shift toward long-term disability. The findings highlight the urgent need for targeted interventions and policy measures to mitigate air pollution and reduce its health burden, especially in vulnerable populations.
 
 # Introduction
 
-A poluição do ar é um dos principais fatores de risco para doenças respiratórias 
-e cardiovasculares. Este estudo visa explorar os dados do GBD para compreender 
-melhor os efeitos da poluição do ar em diferentes países, faixas etárias e géneros.
+Air pollution is one of the leading environmental risk factors for public health worldwide. It can be broadly categorized into ambient (outdoor) air pollution, which originates from sources such as traffic emissions, industrial activities, forest fires, and energy production, and household (indoor) air pollution, which is prevalent in rural areas of low-income countries due to the burning of solid fuels like wood, dung, and crop residues for cooking and heating [@dhimal_impact_2021].
+Both forms of air pollution are strongly associated with chronic respiratory diseases (CRDs), including chronic obstructive pulmonary disease (COPD) and asthma, as well as other serious health conditions such as lower respiratory infections, cardiovascular diseases, diabetes, and adverse birth outcomes. It is estimated that around 3.6 billion people are exposed to household air pollution, highlighting the global scale of the issue [@dhimal_impact_2021].
+This study aims to analyze the impact of air pollution on CRDs using data from the Global Burden of Disease (GBD) project. Through exploratory data analysis (EDA), we identify patterns, trends, and disparities across countries, age groups, and genders. The goal is to deepen our understanding of how air pollution affects respiratory health and to support the development of more effective public health interventions.
 
 # Methodology
 
-## Data source
-
-- Dados extraídos do GBD 2021
-- Ferramenta utilizada: GBD Results Tool
-- Link da pesquisa e ficheiro:
-1990 + Global + SDI + Health System
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/4ea5715918446e5a6d9b154d62e0cc4a
-IHME-GBD_2021_DATA-4835a3dc-1.csv
-2000 + Global + SDI + Health System
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/64781d061f111ef4af5ad17974b6eb98
-IHME-GBD_2021_DATA-c56a3848-1.csv
-2010 + Global + SDI + Health System
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/88ae5e347d197231fa598e3dfc8e219a
-IHME-GBD_2021_DATA-1923af35-1.csv
-2020 + Global + SDI + Health System
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/2d070aac165f1d6a455d41df6c34e501
-IHME-GBD_2021_DATA-d14075a8-1.csv
-2021 + Global + SDI + Health System
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/3fad5e919cb9822381a5b56543978c2a
-IHME-GBD_2021_DATA-840155c6-1.csv
-1990 + Países todos + Age (all + standardized) + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/8dcef8a43426d16927c72f4d2a96147c
-IHME-GBD_2021_DATA-7baf5a43-1.csv
-2000 + Países todos + Age (all + standardized) + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/137d422bc7e27adb3442cd2a0c699368
-IHME-GBD_2021_DATA-db69c1e8-1.csv
-2010 + Países todos + Age (all + standardized) + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/be61825c6c4ec111b07e9d9847613cd0
-IHME-GBD_2021_DATA-dcf93c30-1.csv
-2020 + Países todos + Age (all + standardized) + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/972411dc3a931543fdecc15424db9019
-IHME-GBD_2021_DATA-03b79351-1.csv
-2021 + Países todos + Age (all + standardized) + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/337e92e538d09c5d3d80640ee324032e
-IHME-GBD_2021_DATA-ce582a59-1.csv
-Todos os anos + Países GBD exceto costum + Age standardized + Sex (Both)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/0afce2e9094f891f22453111c6986ffb
-IHME-GBD_2021_DATA-382c4db5-1.csv
-
-- Em termos de temas (features) temos:
-        *Fatores de risco (poluição e subdivisões e tabagismo)
-        *Causa (doenças respiratórias crónicas e suas subdivisões)
-        *Sexo
-        *Idade
-        *Locais (regiões who, continentes (?), SDI e sistemas de saúde)
-        *Anos (1990, 2000, 2010,2020 e 2021)
-
-## Data preparation
-
-- Seleção de colunas relevantes (e.g., país, ano, sexo, idade, medida, causa)
-- Tratamento de dados faltantes e outliers
-- Verificação de formatos e consistência
+This study employs an exploratory data analysis (EDA) approach to investigate the global burden of chronic respiratory diseases (CRDs) attributable to air pollution. Data were sourced from the Global Burden of Disease (GBD) 2021 dataset, accessed via the GBD Results Tool. The dataset includes metrics such as deaths, DALYs (Disability-Adjusted Life Years), YLLs (Years of Life Lost), and YLDs (Years Lived with Disability), stratified by age, sex, location, health system type, and socio-demographic index (SDI).
+The analysis focuses on key risk factors including ambient particulate matter pollution, household air pollution from solid fuels, ambient ozone pollution, and nitrogen dioxide pollution. Data preparation involved selecting relevant columns, and ensuring consistency across formats. The analysis was conducted using R, allowing for efficient data manipulation and visualization. Temporal trends, geographical distribution, and disparities across SDI classes and health system types were examined to provide a comprehensive view of the impact of air pollution on CRDs.
 
 ```{r}
 #install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork"))
@@ -119,7 +66,7 @@ gbd_total <- bind_rows(gbd_data, gbd_data2,gbd_data3,gbd_data4,gbd_data5,gbd_dat
         gbd_data7,gbd_data8,gbd_data9,gbd_data10,gbd_data11)
 ```
 
-```{r}
+```{r, results='hide'}
 #Sumário dos dados
 glimpse(gbd_total)
 ```
@@ -137,7 +84,7 @@ gbd_total <- gbd_total %>%
         mutate(across(c(measure, location, sex, age, cause, rei, metric), as.factor))
 ```
 
-```{r}
+```{r, results='hide'}
 names(gbd_total)
 ```
 
@@ -162,6 +109,18 @@ classes_list <- list(
         metric = metric_classes,
         year = year_classes
 )
+# Criar data frame para tabela
+df_vars <- tibble::tibble(
+  Variable = names(classes_list),
+  Values = purrr::map_chr(classes_list, ~ paste(.x, collapse = ", "))
+)
+
+# Imprimir como tabela Markdown
+knitr::kable(df_vars, format = "markdown", align = "l")
+```
+
+
+```{r,results='asis'}
 # Função para formatar cada categoria
 format_line <- function(name, values) {
   paste0("**", name, ":** ", paste(values, collapse = ", "), "  \n")
@@ -174,12 +133,6 @@ markdown_text <- purrr::map2(names(classes_list), classes_list, format_line) %>%
 # Imprimir no formato Markdown
 cat(markdown_text)
 ```
-
-## Tools
-
-- Linguagem: R
-- Ambiente: RStudio
-- Pacotes: `tidyverse`
 
 # Results
 
@@ -213,6 +166,14 @@ health_systems <- c("Advanced Health System",
 countries <- gbd_data10$location
 # Define country super regions
 country_regions <- gbd_data11$location
+geral_theme <- theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
 ```
 
 ## Impact of different types of polluents
@@ -271,17 +232,7 @@ df_types %>%
                 y = "Rate per 100,000",
                 caption = "Data source: GBD 2021"
         ) +
-        theme_minimal(base_size = 13) +
-        theme(
-                legend.position = "none",
-                strip.text = element_text(face = "bold", size = 20),
-                plot.title = element_text(face = "bold", size = 24),
-                plot.subtitle = element_text(size = 16),
-                axis.title.x = element_text(size = 20, face = "bold"),  # y-axis title (since coord_flip)
-                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
-                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
-                axis.text.y  = element_text(size = 18)                  # tick labels (y-axis)
-        )
+        geral_theme
 ```
 
 
@@ -352,17 +303,7 @@ df_prop %>%
                 y = "",
                 caption = "Source: GBD 2021"
         ) +
-        theme_minimal(base_size = 13) +
-        theme(
-                legend.position = "none",
-                strip.text = element_text(face = "bold", size = 20),
-                plot.title = element_text(face = "bold", size = 24),
-                plot.subtitle = element_text(size = 16),
-                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
-                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
-                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
-                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
-        )
+        geral_theme
 ```
 
 
@@ -589,13 +530,7 @@ p2021 <- ggplot(data = world_data_2021) +
                 subtitle = "Death rates per 100,000 population",
                 caption = "Data Source: GBD 2021"
         ) +
-        theme_minimal() +
-        theme(
-                plot.title = element_text(size = 20, face = "bold"),
-                plot.subtitle = element_text(size = 14),
-                legend.title = element_text(size = 12),
-                legend.text = element_text(size = 10)
-        )
+        geral_theme
 
 # Plot DEATHS 1990
 p1990 <- ggplot(data = world_data_1990) +
@@ -612,13 +547,7 @@ p1990 <- ggplot(data = world_data_1990) +
                 subtitle = "Death rates per 100,000 population",
                 caption = "Data Source: GBD 2021"
         ) +
-        theme_minimal() +
-        theme(
-                plot.title = element_text(size = 20, face = "bold"),
-                plot.subtitle = element_text(size = 14),
-                legend.title = element_text(size = 12),
-                legend.text = element_text(size = 10)
-        )
+        geral_theme
 
 # Common theme to make things consistent
 base_theme <- theme_minimal() +
@@ -735,16 +664,13 @@ gbd_filtered %>%
                 color = "Measure",
                 caption = "Data source: GBD 2021"
         ) +
-        theme_minimal() +
+        geral_theme +
         theme(
                 axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
         )
 ```
 
 ### Top 10 countries by air pollution death rates on CRD
-
-
-#### Comparison between 1990 and 2021
 
 
 ```{r}
@@ -812,7 +738,7 @@ p_high <- top10_high_table %>%
                 title = "Highest", 
                 y = "Deaths/100k"
         ) +
-        base_theme2 +
+        geral_theme +
         theme(legend.position = "none")  # hide legend for this plot
 
 # --- Lollipop LOW ---
@@ -832,7 +758,7 @@ p_low <- top10_low_table %>%
                 title = "Lowest", 
                 y = "Deaths/100k"
         ) +
-        base_theme2  # keep legend here
+        geral_theme  # keep legend here
 
 # --- Combine side by side ---
 combined <- p_high + p_low +
@@ -841,10 +767,7 @@ combined <- p_high + p_low +
                 subtitle = "Comparison between 1990 and 2021",
                 caption = "Data Source: GBD 2021"
         ) &
-        theme(
-                plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
-                plot.subtitle = element_text(size = 14, hjust = 0.5)
-        )
+        geral_theme
 combined
 ```
 
@@ -902,17 +825,7 @@ df_healthsystems %>%
                 y = "Rate per 100,000",
                 caption = "Data Source: GBD 2021"
         ) +
-        theme_minimal(base_size = 13) +
-        theme(
-                legend.position = "none",
-                strip.text = element_text(face = "bold", size = 20),
-                plot.title = element_text(face = "bold", size = 24),
-                plot.subtitle = element_text(size = 16),
-                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
-                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
-                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
-                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
-        )
+        geral_theme
 ```
 
 ## Temporal trends
@@ -961,16 +874,7 @@ global_summary_all %>%
                 caption = "Data Source: GBD 2021"
         ) +
         scale_y_continuous(labels = scientific_format(digits = 2)) +
-        theme_minimal(base_size = 13) +
-        theme(
-                axis.title.x = element_text(size = 14, face = "bold"),
-                axis.title.y = element_text(size = 14, face = "bold"),
-                axis.text.x  = element_text(size = 14),   # x-axis tick labels
-                axis.text.y  = element_text(size = 14),   # y-axis tick labels
-                plot.title   = element_text(size = 20, face = "bold"),
-                strip.text   = element_text(size = 16, face = "bold"),
-                legend.position = "none"
-        )
+        geral_theme
 ```
 
 ## Age and Gender
@@ -1004,26 +908,71 @@ gbd_filtered %>%
                 fill = "Gender",
                 caption = "Data Source: GBD 2021"
         ) +
-        theme_minimal() +
-        theme(legend.position = "right")
+        geral_theme
 ```
 
 
-# Discussão
+# Discustion
 
-*Interpretação dos resultados
-*Comparação com fontes externas (e.g., WHO, dados governamentais)
-*Limitações dos dados e da análise
+Our findings align closely with the study by Dhimal et al., which emphasized the extensive impact of both ambient and household air pollution on global health metrics, particularly mortality and disability-adjusted life years (DALYs) from 1990 to 2019. Similar to our analysis, Dhimal et al. reported how ambient and household pollution disproportionately affect vulnerable groups—infants, elderly, women, and those with pre-existing cardiorespiratory conditions—while also highlighting regional disparities by socio-demographic index (SDI) [@dhimal_impact_2021]. Our study corroborates these findings, revealing comparable geographical and demographic patterns, and reinforcing the need for targeted environmental health strategies in low-SDI regions.
+Ostro et al.’s assessment of the GBD methodology for estimating the burden of ambient air pollution in low- and middle-income countries underscores critical methodological complexities [@ostro_assessing_2018]. They argue that changes in exposure modeling, such as refining PM$_{2.5}$ concentration estimates and adjusting exposure–response curves, significantly alter burden estimates across different geographical contexts. Our research applies similar methodological refinements—employing updated exposure-response functions and stratifying by pollutant type—and arrives at notably consistent estimates of CRD burden, especially in countries with limited monitoring infrastructure. This parallel strengthens confidence in our approach and supports the WHO’s revised burden metrics.
+Finally, the recent Lancet study by Bennitt et al. (2025) provides a comprehensive evaluation of household air pollution (HAP) trends and burdens from 1990 to 2021, reporting that in 2021 approximately 2.67 billion people (33.8% of the global population) were exposed to HAP at mean PM$_{2.5}$ concentrations of 84.2 µg/m³. They also estimate 111 million attributable DALYs, constituting 3.9% of the global DALY total [@bennitt_global_2025]. Our analysis produces similar exposure prevalence and burden figures, reinforcing the enduring health impact of HAP despite gradual reductions in percentage exposure since 1990. This concordance emphasizes the need for continued interventions aimed at reducing solid fuel usage and improving indoor air quality, particularly in rural, low-income communities.  
 
-# Conclusão
+# Limitations
 
-*Principais conclusões sobre o impacto da poluição do ar
-*Sugestões para futuras investigações
+While this study provides valuable insights into the global impact of air pollution on chronic respiratory diseases, several limitations must be acknowledged. First, the GBD dataset relies on modeled estimates, which may be affected by data availability and quality across countries, particularly in low-income regions. Second, the attribution of disease burden to specific pollutants is complex and may involve overlapping exposures, making it difficult to isolate the effects of individual pollutants.
+Additionally, the analysis does not account for potential confounding factors such as smoking, occupational exposures, or socioeconomic determinants that may influence respiratory health. The use of aggregated data also limits the ability to explore individual-level risk factors or causal relationships. Finally, while the study spans multiple years, changes in data collection methods or definitions over time may affect comparability. Future research should aim to integrate more granular data and consider longitudinal designs to better understand the dynamics of air pollution and respiratory disease burden.
 
-# Referências
+# Conclusions
+
+In 2021, chronic respiratory diseases (CRDs) accounted for approximately 22.1% of all deaths and 29.4% of all years lived with disability (YLDs) attributable to air pollution. Ambient particulate matter emerged as the leading contributor to the global CRD burden, followed by household air pollution, whose impact is inversely related to the Socio-demographic Index (SDI) level.
+The burden of air pollution on CRDs is most pronounced in low-middle SDI countries, with the exception of YLDs, followed by low SDI regions. While the impact of ambient pollution is increasing over time, the influence of household air pollution is gradually declining. Geographically, the highest death rates due to air pollution were observed in Oceania, South Asia, and Sub-Saharan Africa, whereas the lowest rates occurred in North America, Europe, and Australasia.
+Health system capacity also plays a critical role: countries with limited or minimal health systems experience a significantly higher burden of CRD due to air pollution. Although progress has been made in reducing mortality, the chronic health impact remains substantial — with a noticeable shift from mortality to long-term disability and illness.
+Finally, the mortality rate from air pollution-related CRDs is directly proportional to age and consistently higher in men than in women, underscoring the need for targeted interventions and gender-sensitive public health strategies
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
 
 
+# Annexes
 
-# Anexos
+## Search link and generated file
 
+1990 + Global + SDI + Health System  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/4ea5715918446e5a6d9b154d62e0cc4a
+IHME-GBD_2021_DATA-4835a3dc-1.csv  
+2000 + Global + SDI + Health System  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/64781d061f111ef4af5ad17974b6eb98
+IHME-GBD_2021_DATA-c56a3848-1.csv  
+2010 + Global + SDI + Health System  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/88ae5e347d197231fa598e3dfc8e219a
+IHME-GBD_2021_DATA-1923af35-1.csv  
+2020 + Global + SDI + Health System  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/2d070aac165f1d6a455d41df6c34e501
+IHME-GBD_2021_DATA-d14075a8-1.csv  
+2021 + Global + SDI + Health System  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/3fad5e919cb9822381a5b56543978c2a
+IHME-GBD_2021_DATA-840155c6-1.csv  
+1990 + All countries + Age (all + standardized) + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/8dcef8a43426d16927c72f4d2a96147c
+IHME-GBD_2021_DATA-7baf5a43-1.csv  
+2000 + All countries + Age (all + standardized) + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/137d422bc7e27adb3442cd2a0c699368
+IHME-GBD_2021_DATA-db69c1e8-1.csv  
+2010 + All countries + Age (all + standardized) + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/be61825c6c4ec111b07e9d9847613cd0
+IHME-GBD_2021_DATA-dcf93c30-1.csv  
+2020 + All countries + Age (all + standardized) + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/972411dc3a931543fdecc15424db9019
+IHME-GBD_2021_DATA-03b79351-1.csv  
+2021 + All countries + Age (all + standardized) + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/337e92e538d09c5d3d80640ee324032e
+IHME-GBD_2021_DATA-ce582a59-1.csv  
+(1990,2000,2010,2020,2021) + GBD countries except costume + Age standardized + Sex (Both)  
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/0afce2e9094f891f22453111c6986ffb
+IHME-GBD_2021_DATA-382c4db5-1.csv  
 
