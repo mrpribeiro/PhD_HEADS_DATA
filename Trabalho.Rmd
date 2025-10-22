@@ -667,104 +667,112 @@ gbd_filtered %>%
         )
 ```
 
-### Top 10 countries by air pollution death rates on CRD
+### Top 10 countries by air pollution death rates on chronic respiratory diseases
 
 ```{r}
-# Top 10 highest
+# Top 10 highest death rate countries
 top10_high_2021 <- df_deaths_clean_2021 %>%
-        arrange(desc(val)) %>%
-        slice_head(n = 10)
+  arrange(desc(val)) %>%
+  slice_head(n = 10)
+
 top10_high_1990 <- df_deaths_clean_1990 %>%
-        arrange(desc(val)) %>%
-        slice_head(n = 10)
+  arrange(desc(val)) %>%
+  slice_head(n = 10)
 
-# Top 10 lowest
+# Top 10 lowest death rate countries
 top10_low_2021 <- df_deaths_clean_2021 %>%
-        arrange(val) %>%
-        slice_head(n = 10)
-top10_low_1990 <- df_deaths_clean_1990 %>%
-        arrange(val) %>%
-        slice_head(n = 10)
+  arrange(val) %>%
+  slice_head(n = 10)
 
-# Combine both into one table
+top10_low_1990 <- df_deaths_clean_1990 %>%
+  arrange(val) %>%
+  slice_head(n = 10)
+
+# Combine both years into one table
+# Highest
 top10_high_table <- bind_rows(
-        top10_high_2021 %>% mutate(year = "2021"),
-        top10_high_1990 %>% mutate(year = "1990")
-        ) %>%
-        select(year, location, val, upper, lower)
+  top10_high_2021 %>% mutate(year = "2021"),
+  top10_high_1990 %>% mutate(year = "1990")
+) %>%
+  select(year, location, val, upper, lower)
+# Lowest
 top10_low_table <- bind_rows(
-        top10_low_2021 %>% mutate(year = "2021"),
-        top10_low_1990 %>% mutate(year = "1990")
-        ) %>%
-        select(year, location, val, upper, lower)
+  top10_low_2021 %>% mutate(year = "2021"),
+  top10_low_1990 %>% mutate(year = "1990")
+) %>%
+  select(year, location, val, upper, lower)
 
 # Make sure year is a factor so colors are consistent
 top10_high_table$year <- factor(top10_high_table$year, levels = c("1990", "2021"))
 top10_low_table$year <- factor(top10_low_table$year, levels = c("1990", "2021"))
 
-# Define a consistent color mapping for years
+# Lolipop Plots 
+# Define color mapping
 year_colors <- c("1990" = "#003f5c", "2021" = "#ffa600")
 
-# --- Base theme ---
-base_theme2 <- theme_minimal() +
-        theme(
-                plot.title = element_text(size = 14, face = "bold"),
-                axis.title.y = element_blank(),
-                axis.title.x = element_text(size = 12),
-                axis.text = element_text(size = 10),
-                legend.title = element_text(size = 12),
-                legend.text = element_text(size = 10)
-        )
+# Base theme
+base_theme <- theme_minimal() +
+  theme(
+    plot.title = element_text(size = 11, face = "bold", hjust = 0.5),
+    axis.title.y = element_blank(),
+    axis.title.x = element_text(size = 11),
+    axis.text.y = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(size = 10),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 11)
+  )
 
-# --- Lollipop HIGH ---
-p_high <- top10_high_table %>% 
-        ggplot(aes(x = reorder(location, val), y = val, color = year)) +
-        geom_point(size = 4) +
-        geom_segment(
-                aes(x = location, xend = location, y = 0, yend = val), 
-                linewidth = 1
-        ) +
-        geom_errorbar(
-                aes(ymin = lower, ymax = upper), 
-                width = 0.2
-        ) +
-        coord_flip() +
-        scale_color_manual(values = year_colors, name = "Year") +
-        labs(
-                title = "Highest", 
-                y = "Deaths/100k"
-        ) +
-        geral_theme +
-        theme(legend.position = "none")  # hide legend for this plot
+# Lollipop HIGH
+p_high <- ggplot(top10_high_table, aes(x = reorder(location, val), y = val, color = year)) +
+  geom_segment(aes(xend = location, y = 0, yend = val), linewidth = 1) +
+  geom_point(size = 4) +
+  coord_flip() +
+  scale_color_manual(values = year_colors, name = "Year") +
+  labs(
+    y = "Deaths/100k",
+    title = "Highest Mortality Countries"
+  ) +
+  base_theme +
+  theme(
+    legend.position = "none"
+  )
 
-# --- Lollipop LOW ---
-p_low <- top10_low_table %>% 
-        ggplot(aes(x = reorder(location, -val), y = val, color = year)) +
-        geom_point(size = 4) +
-        geom_segment(
-                aes(x = location, xend = location, y = 0, yend = val), 
-                linewidth = 1
-        ) +
-        geom_errorbar(
-                aes(ymin = lower, ymax = upper), 
-                width = 0.2) +
-        coord_flip() +
-        scale_color_manual(values = year_colors, name = "Year") +
-        labs(
-                title = "Lowest", 
-                y = "Deaths/100k"
-        ) +
-        geral_theme  # keep legend here
+# Lollipop LOW
+p_low <- ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color = year)) +
+  geom_segment(aes(xend = location, y = 0, yend = val), linewidth = 1) +
+  geom_point(size = 4) +
+  coord_flip() +
+  scale_color_manual(values = year_colors, name = "Year") +
+  labs(
+    y = "Deaths/100k",
+    title = "Lowest Mortality Countries"
+  ) +
+  base_theme +
+  theme(
+    legend.position = "bottom",
+    legend.justification = "center"
+  )
 
-# --- Combine side by side ---
+# Combine side by side
 combined <- p_high + p_low +
-        plot_annotation(
-                title = "Top 10 countries by air pollution death rates on CRD",
-                subtitle = "Comparison between 1990 and 2021",
-                caption = "Data Source: GBD 2021"
-        ) &
-        geral_theme
+  plot_layout(guides = "collect") +
+  plot_annotation(
+    title = "Global Extremes in Deaths from Air Pollution–Related Chronic Respiratory Diseases (1990 vs 2021)",
+    caption = "Data source: Global Burden of Disease 2021"
+  ) &
+  theme(
+    legend.position = "right",
+    legend.direction = "vertical",
+    legend.box.just = "center", 
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 11),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5, margin = margin(b = 10)),
+    plot.caption = element_text(size = 10, hjust = 1, face = "italic")
+  )
+
+# Show plot
 combined
+
 ```
 
 ## Impact of Air Pollution on CRD by Health System Type (2021)
