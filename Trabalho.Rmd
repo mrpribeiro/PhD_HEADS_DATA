@@ -157,21 +157,6 @@ classes_list <- list(
 # Ver a estrutura da lista de modo a ficar mais compacto.
 print(classes_list)
 ```
-```{r}
-gbd_filtered <- gbd_total %>% 
-        filter(
-                measure == "Deaths" & 
-                location %in% c("Advanced Health System","Basic Health System","Limited Health System",                 "Minimal Health System") & 
-                sex == "Both" & 
-                age == "Age-standardized" & 
-                cause == "Chronic respiratory diseases" & 
-                rei == "Air pollution" & 
-                metric == "Rate" & 
-                year == "2021"
-        )
-gbd_filtered$val
-```
-
 
 ## Ferramentas
 
@@ -315,7 +300,6 @@ top_locations <- gbd_filtered %>%
   pull(location)
 # Adicionar coluna de rank por medida e ordenar
 gbd_filtered <- gbd_filtered %>%
-        #filter(location %in% top_locations) %>%
         group_by(measure) %>%
         mutate(
                 rank = rank(-val, ties.method = "first"),
