@@ -1,6 +1,6 @@
 ---
 title: "Impact of Air Pollution on Chronic Respiratoy Diseases: An Exploratory Data Analysis of GBD Data"
-author: "João Silva, Marco Pereira, Mariana Ribeiro"
+authors: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -196,7 +196,7 @@ pal <- c(
         "Basic Health System"     = "#fee08b",
         "Advanced Health System"  = "#1a9850"
         )
-# Define the health system categories
+# Define the SDI categories
 SDI_regions <- c(
         "Low SDI",
         "Low-middle SDI",
@@ -360,7 +360,7 @@ df_SDI_regions <- gbd_total %>%
         filter(
                 location %in% SDI_regions,
                 rei == "Air pollution",
-                metric == "Rate",       # <- ensure we are using Rate, not Number
+                metric == "Rate",
                 cause == "Chronic respiratory diseases",
                 age == "Age-standardized",
                 sex == "Both"
@@ -472,21 +472,18 @@ global_DALYS_year %>%
         )
 ```
 
-## Geographical Distribution
+## Geographical distribution
 
 ### Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
 
-Between 1990 and 2021, the global distribution of deaths attributable to
-air pollution in CRDs showed substantial geographical variation. In
-1990, the highest mortality rates were concentrated in East Asia,
-particularly China, and parts of North Africa, exceeding 160 deaths per
-100,000 population. By 2021, mortality had decreased in East Asia but
-increased markedly in South Asia, with India, Nepal, and Bangladesh
-emerging as the most affected countries. Conversely, high-income
-regions, including North America, Western Europe, and Oceania,
-consistently recorded the lowest mortality (\<40 deaths per 100,000).
-Overall, the data indicate a shift in disease burden from East to South
-Asia, alongside a modest global decline in mortality rates.
+Between 1990 and 2021, global mortality rates from CRDs attributable to
+air pollution showed marked geographical variation and a general decline
+over time (Figure X-MAPS). In 1990, the highest mortality rates were
+concentrated in East and South Asia, particularly in China and India, as
+well as parts of Sub-Saharan Africa and northern Oceania. By 2021,
+although these regions remained among the most affected, the intensity
+of mortality had visibly decreased, as indicated by the lighter color
+gradients on the map.
 
 ```{r}
 # Filter and select relevant columns for deaths in 2021
@@ -603,7 +600,7 @@ p2021 <- ggplot(data = world_data_2021) +
   base_theme
 
 # Combine maps side by side
-combined <- p1990 + p2021 +
+combined_maps <- p1990 + p2021 +
   plot_annotation(
     title = "Global Deaths from Chronic Respiratory Diseases Attributable to Air Pollution (1990–2021)",
     subtitle = "Death Rates per 100,000 Population",
@@ -615,81 +612,17 @@ combined <- p1990 + p2021 +
   )
 
 # Show maps
-combined
+combined_maps
 ```
 
-### Country ranking by all measures in 2021
-
-```{r,warning=FALSE}
-# Filtrar linhas
-gbd_filtered <- gbd_total %>% 
-        filter(
-                location %in% gbd_data11$location,
-                sex == "Both",
-                age == "Age-standardized",
-                cause == "Chronic respiratory diseases",
-                rei == "Air pollution",
-                metric == "Rate",
-                year == "2021",
-        )
-# Obter os top 10 locais com mais mortes
-top_locations <- gbd_filtered %>%
-  filter(measure == "Deaths") %>%
-  arrange(desc(val)) %>%
-  mutate(rank = row_number()) %>%
-  slice(1:10) %>%
-  pull(location)
-# Adicionar coluna de rank por medida e ordenar
-gbd_filtered <- gbd_filtered %>%
-        group_by(measure) %>%
-        mutate(
-                rank = rank(-val, ties.method = "first"),
-                rank = if_else(rank <= 10, rank, NA_integer_),
-                location = fct_reorder(location, desc(val))
-        ) %>%
-        ungroup()
-# Fazer Barplot
-gbd_filtered %>%
-        ggplot(aes(x = location, y = val,color = measure, group = measure)) +
-        geom_line(
-                size = 1,
-                alpha = 0.5,
-        ) +
-        geom_point(
-                size = 3,
-                alpha = 0.5,
-        ) +
-        geom_text(
-                aes(x = location, y = val, label = rank), 
-                vjust = -1.5, 
-                size = 3, 
-                fontface = "bold", 
-                inherit.aes = FALSE) +
-        labs(
-                title = "Chronic Respiratory Disease Burden by Region (2021)",
-                x = "Regions (ordered by decreasing number of deaths)",
-                y = "Measure (rate)",
-                color = "Measure",
-                caption = "Data source: GBD 2021"
-        ) +
-        geral_theme +
-        theme(
-                axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
-        )
-```
-
-### Top 10 countries by air pollution death rates on chronic respiratory diseases
-
-At the country level, China, Nepal, and Papua New Guinea recorded the
-highest mortality rates in 2021, exceeding 100 deaths per 100,000
-population. Other high-burden countries included India, Bangladesh, and
-Myanmar, reflecting the concentration of risk in South and East Asia.
-The lowest mortality rates (\<2 deaths per 100,000) were observed in
-high-income nations such as Finland, Sweden, New Zealand, and Australia,
-as well as several Caribbean and Pacific islands. Between 1990 and 2021,
-a decline in mortality was observed in several high-burden countries,
-particularly China, while South Asian nations showed limited
-improvement.
+Figure X-TOPs further illustrates these changes at the country level. In
+1990, China had one of the highest mortality rates (160\> deaths per
+100,000), but by 2021, it showed a substantial reduction, no longer
+ranking among the top 10 (\<40 deaths per 100,000). Nepal, however,
+emerged as the country with the highest mortality rate in 2021, despite
+a slight decrease over time. Other high-burden countries in 2021
+included Papua New Guinea, India, Bangladesh, and Myanmar, reflecting
+the continued concentration of risk in South and East Asia.
 
 ```{r}
 # Top 10 highest death rate countries
@@ -776,7 +709,7 @@ p_low <- ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color
   )
 
 # Combine side by side
-combined <- p_high + p_low +
+combined_lolipops <- p_high + p_low +
   plot_layout(guides = "collect") +
   plot_annotation(
     title = "Global Extremes in Deaths from Air Pollution–Related Chronic Respiratory Diseases (1990 vs 2021)",
@@ -793,11 +726,107 @@ combined <- p_high + p_low +
   )
 
 # Show plot
-combined
+combined_lolipops
+
+# # CHINA values in 1990 and 2021
+# df_deaths_clean_1990 %>%
+# filter(
+#   location == "China"
+# )
+# df_deaths_clean_2021 %>%
+# filter(
+#   location == "China"
+# )
+
 
 ```
 
+Conversely, countries with the lowest mortality rates (\<2 deaths per
+100,000) in both years were predominantly high-income nations such as
+Finland, Sweden, New Zealand, and Australia, along with several
+Caribbean and Pacific island states.
+
+Overall, the data suggest a global improvement in air pollution-related
+CRD mortality, with significant progress in some high-burden countries
+like China, while others, particularly in South Asia, showed limited
+change.
+
+There is a clear unequal burden of air pollution-related health
+outcomes, likely driven by differences in industrialization, urban air
+quality, healthcare infrastructure, and policy enforcement. While some
+high-burden countries like China showed significant improvement over
+time, others, particularly in South Asia experienced only modest
+reductions, underscoring the need for targeted interventions in
+vulnerable regions.
+
+### Country ranking by all measures in 2021
+
+```{r,warning=FALSE}
+# Filtrar linhas
+gbd_filtered <- gbd_total %>% 
+        filter(
+                location %in% gbd_data11$location,
+                sex == "Both",
+                age == "Age-standardized",
+                cause == "Chronic respiratory diseases",
+                rei == "Air pollution",
+                metric == "Rate",
+                year == "2021",
+        )
+# Obter os top 10 locais com mais mortes
+top_locations <- gbd_filtered %>%
+  filter(measure == "Deaths") %>%
+  arrange(desc(val)) %>%
+  mutate(rank = row_number()) %>%
+  slice(1:10) %>%
+  pull(location)
+# Adicionar coluna de rank por medida e ordenar
+gbd_filtered <- gbd_filtered %>%
+        group_by(measure) %>%
+        mutate(
+                rank = rank(-val, ties.method = "first"),
+                rank = if_else(rank <= 10, rank, NA_integer_),
+                location = fct_reorder(location, desc(val))
+        ) %>%
+        ungroup()
+# Fazer Barplot
+gbd_filtered %>%
+        ggplot(aes(x = location, y = val,color = measure, group = measure)) +
+        geom_line(
+                size = 1,
+                alpha = 0.5,
+        ) +
+        geom_point(
+                size = 3,
+                alpha = 0.5,
+        ) +
+        geom_text(
+                aes(x = location, y = val, label = rank), 
+                vjust = -1.5, 
+                size = 3, 
+                fontface = "bold", 
+                inherit.aes = FALSE) +
+        labs(
+                title = "Chronic Respiratory Disease Burden by Region (2021)",
+                x = "Regions (ordered by decreasing number of deaths)",
+                y = "Measure (rate)",
+                color = "Measure",
+                caption = "Data source: GBD 2021"
+        ) +
+        geral_theme +
+        theme(
+                axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+        )
+```
+
 ## Impact of Air Pollution on chronic respiratory disease by health system type in 2021
+
+Figure X-HS shows how the burden of CRDs caused by air pollution varies
+depending on the strength of a country’s health system. As expected,
+countries with strong, advanced health systems (green) show the lowest
+rates of deaths and disease burden. However, the pattern across weaker
+systems is not linear. Surprisingly, countries with basic health systems
+report higher rates than those with limited or even minimal systems.
 
 ```{r}
 # Prepare data
@@ -873,6 +902,28 @@ combined_health <- (p_deaths | p_dalys) /
 # Show final figure
 combined_health
 ```
+
+This unexpected trend is likely explained by differences in diagnostic
+capacity and data reporting. In countries with minimal health systems,
+many cases go undiagnosed or unrecorded due to poor access to healthcare
+and weak surveillance systems. As a result, the actual burden may be
+much higher than what is reflected in the data. In contrast, basic
+systems may have just enough infrastructure to detect and report more
+cases, which can make their rates appear higher, not necessarily because
+the situation is worse, but because it is better documented.
+
+From Figure X-HS, it is also clear that most of the burden comes from
+premature deaths, measured as YLLs, rather than long-term disability
+(YLDs). This suggests that weaker health systems struggle to prevent or
+treat pollution-related respiratory diseases effectively.
+
+Overall, the figure highlights a clear inequality. People living in
+countries with weaker healthcare systems face a much greater impact from
+air pollution, especially in terms of early death. This pattern is
+closely tied to income level, as low-income countries are more likely to
+have minimal or limited health systems, while high-income countries tend
+to have advanced ones. This reinforces the need for stronger health
+infrastructure and pollution control policies.
 
 ## Temporal trends attributable to air pollution on chronical respiratory diseases between 1990 and 2021
 
