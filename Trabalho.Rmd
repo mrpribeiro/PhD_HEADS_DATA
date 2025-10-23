@@ -819,7 +819,7 @@ gbd_filtered %>%
         )
 ```
 
-## Impact of Air Pollution on chronic respiratory disease by health system type in 2021
+## Impact of air pollution on chronic respiratory disease by health system type in 2021
 
 Figure X-HS shows how the burden of CRDs caused by air pollution varies
 depending on the strength of a country’s health system. As expected,
@@ -926,6 +926,12 @@ to have advanced ones. This reinforces the need for stronger health
 infrastructure and pollution control policies.
 
 ## Temporal trends attributable to air pollution on chronical respiratory diseases between 1990 and 2021
+
+Figure X-GlobalTrends presents the global evolution of deaths and
+disease burden from chronic respiratory diseases attributable to air
+pollution over the past three decades. Overall, the data show a
+declining trend in both mortality and disability burden, although
+the reduction is not uniform across all measures.
 
 ```{r}
 # Total deaths worldwide by year:
@@ -1034,6 +1040,28 @@ combined_plot <- (p_deaths | p_dalys) /
 # Show the combined plot
 combined_plot
 ```
+
+The number of deaths per 100,000 population decreased from
+approximately 30 in 1990 to around 25 in recent years, with a slight
+increase observed toward the end of the period due to the atipic year of
+the covid pandemic. A more pronounced decline is seen in DALYs,
+which dropped from about 700 per 100,000 in 1990 to roughly 500 per
+100,000 by 2021. This suggests a meaningful reduction in the overall
+health impact of air pollution on respiratory diseases.
+
+The decrease is largely driven by a reduction in YLLs, which fell
+from around 700 to below 400 per 100,000, indicating fewer premature
+deaths over time. In contrast, YLDs remained relatively stable
+throughout the period, with minor fluctuations and a slight increase in
+recent years. This pattern suggests that while fewer people are dying
+prematurely from pollution-related CRDs, the burden of living with these
+conditions has not improved significantly.
+
+Together, these trends reflect progress in reducing the fatal impact of
+air pollution on respiratory health globally, likely due to improvements
+in air quality, healthcare access, and disease prevention. However, the
+persistent levels of disability highlight the need for continued efforts
+in long-term disease management and rehabilitation.
 
 ## Age and Gender
 
