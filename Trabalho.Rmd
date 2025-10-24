@@ -1,5 +1,5 @@
 ---
-title: "Impact of Air Pollution on Chronic Respiratoy Diseases: An Exploratory Data Analysis of GBD Data"
+title: "Exploring the impact of air pollution on chronic respiratory diseases using Global Burden of Disease data"
 authors: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
@@ -66,18 +66,44 @@ This study employs an exploratory data analysis (EDA) approach to
 investigate the global burden of chronic respiratory diseases (CRDs)
 attributable to air pollution. Data were sourced from the Global Burden
 of Disease (GBD) 2021 dataset, accessed via the GBD Results Tool. The
-dataset includes metrics such as deaths, DALYs (Disability-Adjusted Life
+dataset includes metrics such as deaths, DALYs (Disability‑Adjusted Life
 Years), YLLs (Years of Life Lost), and YLDs (Years Lived with
 Disability), stratified by age, sex, location, health system type, and
-socio-demographic index (SDI). The analysis focuses on key risk factors
-including ambient particulate matter pollution, household air pollution
-from solid fuels, ambient ozone pollution, and nitrogen dioxide
-pollution. Data preparation involved selecting relevant columns, and
-ensuring consistency across formats. The analysis was conducted using R,
-allowing for efficient data manipulation and visualization. Temporal
-trends, geographical distribution, and disparities across SDI classes
-and health system types were examined to provide a comprehensive view of
-the impact of air pollution on CRDs.
+socio‑demographic index (SDI). A comprehensive list of these variables
+is presented in *Table 1*. DALYs represent the total burden of disease
+and are calculated as the sum of YLLs and YLDs. YLLs quantify premature
+mortality by multiplying the number of deaths at each age by the
+standard life expectancy at that age. YLDs measure the non-fatal burden
+of disease and are derived by combining disease prevalence or incidence
+with disability weights, which reflect the severity of health loss and
+are estimated using population surveys and expert consensus. SDI is a
+composite indicator of development, constructed as the geometric mean of
+scaled values for income per capita, average educational attainment in
+the population aged 15 years and older, and total fertility rate under
+age 25. It ranges from 0 (least developed) to 1 (most developed), and is
+used to stratify countries into five development categories. The
+analysis focused on key risk factors including ambient particulate
+matter pollution, household air pollution from solid fuels, ambient
+ozone pollution, and nitrogen dioxide pollution. Data preparation
+involved selecting relevant variables and ensuring consistent formatting
+across datasets. All analyses were conducted using the R programming
+language, employing a suite of packages to support data manipulation,
+visualization, and geospatial mapping. Specifically, the tidyverse
+package was used for data wrangling and plotting; scales for formatting
+axis labels and percentages; rnaturalearth and rnaturalearthdata for
+retrieving country-level spatial data; sf for handling spatial features;
+countrycode for harmonizing country names to ISO3 codes; viridis for
+perceptually uniform color palettes; patchwork for combining multiple
+plots; and purrr for functional programming operations. Uncertainty
+intervals for GBD estimates are derived using a Bayesian statistical
+framework. For each metric, the GBD methodology generates 1,000
+posterior draws based on input data and model assumptions. The 95%
+uncertainty interval is then defined by the 2.5th and 97.5th percentiles
+of the resulting distribution, capturing both sampling and model-based
+uncertainty. This analytical framework enabled the exploration of
+temporal trends, geographical distribution, and disparities across SDI
+classes, health system types, sex, and age groups, providing a
+comprehensive view of the impact of air pollution on CRDs.
 
 ```{r}
 #install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork"))
@@ -92,6 +118,7 @@ library(countrycode)
 library(viridis)
 library(patchwork)
 library(purrr)
+library(kableExtra)
 #Remove everything, clean environment
 rm(list = ls())
 ```
@@ -136,7 +163,7 @@ gbd_total <- gbd_total %>%
 names(gbd_total)
 ```
 
-```{r,results='asis'}
+```{r,results='asis',tab.cap="List of variables"}
 # Devolve um vetor com todos os valores únicos (os nomes das categorias)
 measure_classes <- unique(gbd_total$measure)
 location_classes <- unique(gbd_total$location)
@@ -146,40 +173,35 @@ cause_classes <- unique(gbd_total$cause)
 rei_classes <- unique(gbd_total$rei)
 metric_classes <- unique(gbd_total$metric)
 year_classes <- unique(gbd_total$year)
-# Criar uma lista com todas as variáveis
+
+# Criar uma lista com todas as variáveis (truncated)
 classes_list <- list(
-        measure = measure_classes,
-        location = location_classes,
-        sex = sex_classes,
-        age = age_classes,
-        cause = cause_classes,
-        rei = rei_classes,
-        metric = metric_classes,
-        year = year_classes
+        measure = paste(measure_classes, collapse = ", "),
+        location = paste(location_classes, collapse = ", "),
+        sex = paste(sex_classes, collapse = ", "),
+        age = paste(age_classes, collapse = ", "),
+        cause = paste(cause_classes, collapse = ", "),
+        rei = paste(rei_classes, collapse = ", "),
+        metric = paste(metric_classes, collapse = ", "),
+        year = paste(year_classes, collapse = ", ")
 )
+
 # Criar data frame para tabela
 df_vars <- tibble::tibble(
-  Variable = names(classes_list),
-  Values = purrr::map_chr(classes_list, ~ paste(.x, collapse = ", "))
+        Variable = names(classes_list),
+        Values = unlist(classes_list)
 )
 
-# Imprimir como tabela Markdown
-knitr::kable(df_vars, format = "markdown", align = "l")
+# Build the table step-by-step to avoid pipeline issues
+tab <- kable(df_vars, format = "latex", booktabs = TRUE) %>% 
+        kable_styling(latex_options = c("repeat_header", "striped", "scale_down")) %>%
+        column_spec(1, width = "3cm")  %>% 
+        column_spec(2, width = "12cm")
+
+# Output the table (in R Markdown, this will render as LaTeX)
+tab
 ```
 
-```{r,results='asis'}
-# Função para formatar cada categoria
-format_line <- function(name, values) {
-  paste0("**", name, ":** ", paste(values, collapse = ", "), "  \n")
-}
-
-# Aplicar a função à lista
-markdown_text <- purrr::map2(names(classes_list), classes_list, format_line) %>%
-  paste(collapse = "")
-
-# Imprimir no formato Markdown
-cat(markdown_text)
-```
 
 # Results
 
@@ -225,7 +247,7 @@ geral_theme <- theme_minimal(base_size = 12) +
 
 ## Impact of different types of polluents
 
-```{r}
+```{r, fig.cap = "Global Impact of Different Types of Air Pollution on CRD (2021)"}
 df_types <- gbd_total %>%
         filter(
                 measure =="DALYs (Disability-Adjusted Life Years)",
@@ -930,8 +952,8 @@ infrastructure and pollution control policies.
 Figure X-GlobalTrends presents the global evolution of deaths and
 disease burden from chronic respiratory diseases attributable to air
 pollution over the past three decades. Overall, the data show a
-declining trend in both mortality and disability burden, although
-the reduction is not uniform across all measures.
+declining trend in both mortality and disability burden, although the
+reduction is not uniform across all measures.
 
 ```{r}
 # Total deaths worldwide by year:
@@ -1041,21 +1063,21 @@ combined_plot <- (p_deaths | p_dalys) /
 combined_plot
 ```
 
-The number of deaths per 100,000 population decreased from
-approximately 30 in 1990 to around 25 in recent years, with a slight
-increase observed toward the end of the period due to the atipic year of
-the covid pandemic. A more pronounced decline is seen in DALYs,
-which dropped from about 700 per 100,000 in 1990 to roughly 500 per
-100,000 by 2021. This suggests a meaningful reduction in the overall
-health impact of air pollution on respiratory diseases.
+The number of deaths per 100,000 population decreased from approximately
+30 in 1990 to around 25 in recent years, with a slight increase observed
+toward the end of the period due to the atipic year of the covid
+pandemic. A more pronounced decline is seen in DALYs, which dropped from
+about 700 per 100,000 in 1990 to roughly 500 per 100,000 by 2021. This
+suggests a meaningful reduction in the overall health impact of air
+pollution on respiratory diseases.
 
-The decrease is largely driven by a reduction in YLLs, which fell
-from around 700 to below 400 per 100,000, indicating fewer premature
-deaths over time. In contrast, YLDs remained relatively stable
-throughout the period, with minor fluctuations and a slight increase in
-recent years. This pattern suggests that while fewer people are dying
-prematurely from pollution-related CRDs, the burden of living with these
-conditions has not improved significantly.
+The decrease is largely driven by a reduction in YLLs, which fell from
+around 700 to below 400 per 100,000, indicating fewer premature deaths
+over time. In contrast, YLDs remained relatively stable throughout the
+period, with minor fluctuations and a slight increase in recent years.
+This pattern suggests that while fewer people are dying prematurely from
+pollution-related CRDs, the burden of living with these conditions has
+not improved significantly.
 
 Together, these trends reflect progress in reducing the fatal impact of
 air pollution on respiratory health globally, likely due to improvements
