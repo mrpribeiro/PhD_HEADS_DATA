@@ -3,7 +3,7 @@ title: "Exploring the impact of air pollution on chronic respiratory diseases us
 authors: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
+  bookdown::pdf_document2:
     toc: true
     toc_depth: 3
     number_sections: true
@@ -201,7 +201,6 @@ tab <- kable(df_vars, format = "latex", booktabs = TRUE) %>%
 # Output the table (in R Markdown, this will render as LaTeX)
 tab
 ```
-
 
 # Results
 
@@ -500,14 +499,15 @@ global_DALYS_year %>%
 
 Between 1990 and 2021, global mortality rates from CRDs attributable to
 air pollution showed marked geographical variation and a general decline
-over time (Figure X-MAPS). In 1990, the highest mortality rates were
-concentrated in East and South Asia, particularly in China and India, as
-well as parts of Sub-Saharan Africa and northern Oceania. By 2021,
-although these regions remained among the most affected, the intensity
-of mortality had visibly decreased, as indicated by the lighter color
-gradients on the map.
+over time (Figure \@ref(fig:deaths-map)). In 1990, the highest mortality
+rates were concentrated in East and South Asia, particularly in China
+and India, as well as parts of Sub-Saharan Africa and northern Oceania.
+By 2021, although these regions remained among the most affected, the
+intensity of mortality had visibly decreased, as indicated by the
+lighter color gradients on the map.
 
-```{r}
+```{r deaths-map, echo = FALSE, fig.cap = "Global age-standardized death rates per 100,00 population from chronic respiratory diseases attributable to air pollution, 1990 versus 2021."}
+
 # Filter and select relevant columns for deaths in 2021
 df_deaths_clean_2021 <- gbd_total %>%
         filter(
@@ -637,16 +637,18 @@ combined_maps <- p1990 + p2021 +
 combined_maps
 ```
 
-Figure X-TOPs further illustrates these changes at the country level. In
-1990, China had one of the highest mortality rates (160\> deaths per
-100,000), but by 2021, it showed a substantial reduction, no longer
-ranking among the top 10 (\<40 deaths per 100,000). Nepal, however,
-emerged as the country with the highest mortality rate in 2021, despite
-a slight decrease over time. Other high-burden countries in 2021
-included Papua New Guinea, India, Bangladesh, and Myanmar, reflecting
-the continued concentration of risk in South and East Asia.
+Figure \@ref(fig:deathscountry-tops) further illustrates these changes
+at the country level. In 1990, China had one of the highest mortality
+rates (160\> deaths per 100,000), but by 2021, it showed a substantial
+reduction, no longer ranking among the top 10 (\<40 deaths per 100,000).
+Nepal, however, emerged as the country with the highest mortality rate
+in 2021, despite a slight decrease over time. Other high-burden
+countries in 2021 included Papua New Guinea, India, Bangladesh, and
+Myanmar, reflecting the continued concentration of risk in South and
+East Asia.
 
-```{r}
+```{r deathscountry-tops, echo = FALSE, fig.cap = "The top ten countries with the highest and lowest age-standardized death rates per 100,000 population from air pollution–related chronic respiratory diseases, 1990 vs 2021 ."}
+
 # Top 10 highest death rate countries
 top10_high_2021 <- df_deaths_clean_2021 %>%
   arrange(desc(val)) %>%
@@ -843,14 +845,16 @@ gbd_filtered %>%
 
 ## Impact of air pollution on chronic respiratory disease by health system type in 2021
 
-Figure X-HS shows how the burden of CRDs caused by air pollution varies
-depending on the strength of a country’s health system. As expected,
-countries with strong, advanced health systems (green) show the lowest
-rates of deaths and disease burden. However, the pattern across weaker
-systems is not linear. Surprisingly, countries with basic health systems
-report higher rates than those with limited or even minimal systems.
+Figure \@ref(fig:health-system) shows how the burden of CRDs caused by
+air pollution varies depending on the strength of a country’s health
+system. As expected, countries with strong, advanced health systems
+(green) show the lowest rates of deaths and disease burden. However, the
+pattern across weaker systems is not linear. Surprisingly, countries
+with basic health systems report higher rates than those with limited or
+even minimal systems.
 
-```{r}
+```{r health-system, echo = FALSE, fig.cap="Impact of air pollution on chronic respiratory diseases by health system type in 2021. Each panel shows age-standardized rates per 100,000 population for deaths, disability-adjusted life years (DALYs), years of life lost (YLLs), and years lived with disability (YLDs), grouped by advanced, basic, limited, and minimal health system types"}
+
 # Prepare data
 df_healthsystems <- gbd_data %>%
   filter(
