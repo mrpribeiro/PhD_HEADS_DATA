@@ -23,19 +23,18 @@ knitr::opts_chunk$set(echo = FALSE,message=FALSE, warning=FALSE, cache=TRUE, fig
 
 This study investigates the global impact of air pollution on chronic
 respiratory diseases (CRDs) using data from the Global Burden of Disease
-(GBD) 2021. Through exploratory data analysis, we examine the
-contribution of different types of air pollutants—ambient particulate
-matter, household air pollution, ozone, and nitrogen dioxide—to
-CRD-related mortality and disability. In 2021, CRDs accounted for 22.1%
-of all deaths and 29.4% of all years lived with disability (YLDs)
-attributable to air pollution. The burden is disproportionately higher
-in countries with low and low-middle Socio-demographic Index (SDI), and
-in regions with limited or minimal health system capacity. While
-mortality rates have declined over time, the chronic health impact
-remains significant, with a shift toward long-term disability. The
-findings highlight the urgent need for targeted interventions and policy
-measures to mitigate air pollution and reduce its health burden,
-especially in vulnerable populations.
+2021. Through exploratory data analysis, we examine the contribution of
+different types of air pollutants (ambient particulate matter, household
+air pollution, ozone, and nitrogen dioxide) to CRD-related mortality and
+disability. In 2021, CRDs accounted for 22.1% of all deaths and 29.4% of
+all years lived with disability attributable to air pollution. The
+burden is disproportionately higher in countries with low and low-middle
+socio-demographic index, and in regions with limited or minimal health
+system capacity. While mortality rates have declined over time, the
+chronic health impact remains significant, with a shift toward long-term
+disability. The findings highlight the urgent need for targeted
+interventions and policy measures to mitigate air pollution and reduce
+its health burden, especially in vulnerable populations.
 
 # Introduction
 
@@ -63,35 +62,35 @@ more effective public health interventions.
 # Methodology
 
 This study employs an exploratory data analysis (EDA) approach to
-investigate the global burden of chronic respiratory diseases (CRDs)
-attributable to air pollution. Data were sourced from the Global Burden
-of Disease (GBD) 2021 dataset, accessed via the GBD Results Tool. The
-dataset includes metrics such as deaths, DALYs (Disability‑Adjusted Life
-Years), YLLs (Years of Life Lost), and YLDs (Years Lived with
-Disability), stratified by age, sex, location, health system type, and
-socio‑demographic index (SDI). A comprehensive list of these variables
-is presented in *Table 1*. DALYs represent the total burden of disease
-and are calculated as the sum of YLLs and YLDs. YLLs quantify premature
-mortality by multiplying the number of deaths at each age by the
-standard life expectancy at that age. YLDs measure the non-fatal burden
-of disease and are derived by combining disease prevalence or incidence
-with disability weights, which reflect the severity of health loss and
-are estimated using population surveys and expert consensus. SDI is a
-composite indicator of development, constructed as the geometric mean of
-scaled values for income per capita, average educational attainment in
-the population aged 15 years and older, and total fertility rate under
-age 25. It ranges from 0 (least developed) to 1 (most developed), and is
-used to stratify countries into five development categories. The
-analysis focused on key risk factors including ambient particulate
-matter pollution, household air pollution from solid fuels, ambient
-ozone pollution, and nitrogen dioxide pollution. Data preparation
-involved selecting relevant variables and ensuring consistent formatting
-across datasets. All analyses were conducted using the R programming
-language, employing a suite of packages to support data manipulation,
-visualization, and geospatial mapping. Specifically, the tidyverse
-package was used for data wrangling and plotting; scales for formatting
-axis labels and percentages; rnaturalearth and rnaturalearthdata for
-retrieving country-level spatial data; sf for handling spatial features;
+investigate the global burden of CRDs attributable to air pollution.
+Data were sourced from the GBD 2021 dataset, accessed via the GBD
+Results Tool. The dataset includes metrics such as deaths, DALYs
+(Disability‑Adjusted Life Years), YLLs (Years of Life Lost), and YLDs
+(Years Lived with Disability), stratified by age, sex, location, health
+system type, and socio‑demographic index (SDI). A comprehensive list of
+these variables is presented in *Table 1*. DALYs represent the total
+burden of disease and are calculated as the sum of YLLs and YLDs. YLLs
+quantify premature mortality by multiplying the number of deaths at each
+age by the standard life expectancy at that age. YLDs measure the
+non-fatal burden of disease and are derived by combining disease
+prevalence or incidence with disability weights, which reflect the
+severity of health loss and are estimated using population surveys and
+expert consensus. SDI is a composite indicator of development,
+constructed as the geometric mean of scaled values for income per
+capita, average educational attainment in the population aged 15 years
+and older, and total fertility rate under age 25. It ranges from 0
+(least developed) to 1 (most developed), and is used to stratify
+countries into five development categories. The analysis focused on key
+risk factors including ambient particulate matter pollution, household
+air pollution from solid fuels, ambient ozone pollution, and nitrogen
+dioxide pollution. Data preparation involved selecting relevant
+variables and ensuring consistent formatting across datasets. All
+analyses were conducted using the R programming language, employing a
+suite of packages to support data manipulation, visualization, and
+geospatial mapping. Specifically, the tidyverse package was used for
+data wrangling and plotting; scales for formatting axis labels and
+percentages; rnaturalearth and rnaturalearthdata for retrieving
+country-level spatial data; sf for handling spatial features;
 countrycode for harmonizing country names to ISO3 codes; viridis for
 perceptually uniform color palettes; patchwork for combining multiple
 plots; and purrr for functional programming operations. Uncertainty
@@ -497,20 +496,11 @@ global_DALYS_year %>%
         )
 ```
 
-## Geographical distribution
+## Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
 
-### Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
+Between 1990 and 2021, global mortality rates from CRDs attributable to air pollution showed marked geographical variation and a overall decline over time (Figure \@ref(fig:deaths-map)). In 1990, the highest mortality rates were concentrated in East and South Asia, particularly in China and India, as well as parts of Sub-Saharan Africa and northern Oceania. By 2021, although these regions remained among the most affected, the intensity of mortality had visibly decreased, as shown by the lighter colour gradients on the map.
 
-Between 1990 and 2021, global mortality rates from CRDs attributable to
-air pollution showed marked geographical variation and a general decline
-over time (Figure \@ref(fig:deaths-map)). In 1990, the highest mortality
-rates were concentrated in East and South Asia, particularly in China
-and India, as well as parts of Sub-Saharan Africa and northern Oceania.
-By 2021, although these regions remained among the most affected, the
-intensity of mortality had visibly decreased, as indicated by the
-lighter color gradients on the map.
-
-```{r deaths-map, echo = FALSE, fig.cap = "Global age-standardized death rates per 100,00 population from chronic respiratory diseases attributable to air pollution, 1990 versus 2021."}
+```{r deaths-map, echo = FALSE, fig.cap = "Global age-standardized death rates per 100,000 population from chronic respiratory diseases attributable to air pollution, 1990 versus 2021."}
 
 # Filter and select relevant columns for deaths in 2021
 df_deaths_clean_2021 <- gbd_total %>%
@@ -641,15 +631,7 @@ combined_maps <- p1990 + p2021 +
 combined_maps
 ```
 
-Figure \@ref(fig:deathscountry-tops) further illustrates these changes
-at the country level. In 1990, China had one of the highest mortality
-rates (160\> deaths per 100,000), but by 2021, it showed a substantial
-reduction, no longer ranking among the top 10 (\<40 deaths per 100,000).
-Nepal, however, emerged as the country with the highest mortality rate
-in 2021, despite a slight decrease over time. Other high-burden
-countries in 2021 included Papua New Guinea, India, Bangladesh, and
-Myanmar, reflecting the continued concentration of risk in South and
-East Asia.
+Figure \@ref(fig:deathscountry-tops) further highlights these temporal changes at the country level. In 1990, China recorded one of the world’s highest mortality rate (over 160 deaths per 100,000 population), followed by several South Asian and Oceanian countries, including India, Papua New Guinea, and Nepal. By 2021, China had achieved a remarkable decline, dropping below 40 deaths per 100 000 and no longer appearing among the top 10 most affected nations. In contrast, Nepal emerged as the country with the highest mortality rate in 2021, followed by Papua New Guinea, India, Bangladesh, and Myanmar, confirming that South and East Asia remain the global hotspots for CRDs related to air pollution.
 
 ```{r deathscountry-tops, echo = FALSE, fig.cap = "The top ten countries with the highest and lowest age-standardized death rates per 100,000 population from air pollution–related chronic respiratory diseases, 1990 vs 2021 ."}
 
@@ -769,27 +751,11 @@ combined_lolipops
 
 ```
 
-Conversely, countries with the lowest mortality rates (\<2 deaths per
-100,000) in both years were predominantly high-income nations such as
-Finland, Sweden, New Zealand, and Australia, along with several
-Caribbean and Pacific island states.
+Countries with the lowest mortality rates (under 2 deaths per 100 000) in both years were predominantly high-income nations such as Finland, Sweden, New Zealand, and Australia, together with several Caribbean and Pacific island states.
 
-Overall, the data suggest a global improvement in air pollution-related
-CRD mortality, with significant progress in some high-burden countries
-like China, while others, particularly in South Asia, showed limited
-change.
+At the regional level (\@ref(fig:burdenmap-regions)), Oceania, South Asia, and Sub-Saharan Africa show the highest burden across all measures (deaths, DALYs, YLLs, and YLDs), while North America, Western Europe, and Australasia consistently display the lowest rates.
 
-There is a clear unequal burden of air pollution-related health
-outcomes, likely driven by differences in industrialization, urban air
-quality, healthcare infrastructure, and policy enforcement. While some
-high-burden countries like China showed significant improvement over
-time, others, particularly in South Asia experienced only modest
-reductions, underscoring the need for targeted interventions in
-vulnerable regions.
-
-### Country ranking by all measures in 2021
-
-```{r,warning=FALSE}
+```{r burdenmap-regions, echo = FALSE, fig.cap = "Regional variation in chronic respiratory disease burden attributable to air pollution in 2021. Measures are age-standardized rates per 100,000 population for deaths, disability-adjusted life years (DALYs), years of life lost (YLLs), and years lived with disability (YLDs)"}
 # Filter rows
 gbd_filtered <- gbd_total %>% 
         filter(
@@ -846,6 +812,8 @@ gbd_filtered %>%
                 axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
         )
 ```
+
+These findings reveal an overall improvement in air-pollution-related CRD mortality, particularly in some previously high-burden countries, yet progress remains uneven, with slower reductions in regions characterised by persistent poverty, rapid urbanisation, and limited healthcare access.
 
 ## Impact of air pollution on chronic respiratory disease by health system type in 2021
 
@@ -942,7 +910,7 @@ systems may have just enough infrastructure to detect and report more
 cases, which can make their rates appear higher, not necessarily because
 the situation is worse, but because it is better documented.
 
-From Figure X-HS, it is also clear that most of the burden comes from
+From Figure \@ref(fig:health-system), it is also clear that most of the burden comes from
 premature deaths, measured as YLLs, rather than long-term disability
 (YLDs). This suggests that weaker health systems struggle to prevent or
 treat pollution-related respiratory diseases effectively.
@@ -957,13 +925,14 @@ infrastructure and pollution control policies.
 
 ## Temporal trends attributable to air pollution on chronical respiratory diseases between 1990 and 2021
 
-Figure X-GlobalTrends presents the global evolution of deaths and
+Figure \@ref(fig:temporal-trends) presents the global evolution of deaths and
 disease burden from chronic respiratory diseases attributable to air
 pollution over the past three decades. Overall, the data show a
 declining trend in both mortality and disability burden, although the
 reduction is not uniform across all measures.
 
-```{r}
+```{r temporal-trends, echo = FALSE, fig.cap="Global burden of air Pollution on chronic respiratory diseases over time. Each graph shows age-standardized rates per 100,000 population for deaths, disability-adjusted life years (DALYs), years of life lost (YLLs), and years lived with disability (YLDs) from 1990 to 2021."}
+
 # Total deaths worldwide by year:
 global_deaths <- gbd_total %>%
   filter(
@@ -1132,11 +1101,11 @@ gbd_filtered %>%
 Our findings align closely with the study by Dhimal et al., which
 emphasized the extensive impact of both ambient and household air
 pollution on global health metrics, particularly mortality and
-disability-adjusted life years (DALYs) from 1990 to 2019. Similar to our
+DALYs from 1990 to 2019. Similar to our
 analysis, Dhimal et al. reported how ambient and household pollution
 disproportionately affect vulnerable groups—infants, elderly, women, and
 those with pre-existing cardiorespiratory conditions—while also
-highlighting regional disparities by socio-demographic index (SDI)
+highlighting regional disparities by SDI
 [@dhimal_impact_2021]. Our study corroborates these findings, revealing
 comparable geographical and demographic patterns, and reinforcing the
 need for targeted environmental health strategies in low-SDI regions.
@@ -1187,16 +1156,8 @@ burden.
 
 # Conclusions
 
-In 2021, chronic respiratory diseases (CRDs) accounted for approximately
-22.1% of all deaths and 29.4% of all years lived with disability (YLDs)
-attributable to air pollution. Ambient particulate matter emerged as the
-leading contributor to the global CRD burden, followed by household air
-pollution, whose impact is inversely related to the Socio-demographic
-Index (SDI) level. The burden of air pollution on CRDs is most
-pronounced in low-middle SDI countries, with the exception of YLDs,
-followed by low SDI regions. While the impact of ambient pollution is
-increasing over time, the influence of household air pollution is
-gradually declining. Geographically, the highest death rates due to air
+In 2021, CRDs accounted for approximately 22.1% of all deaths and 29.4% of all YLDs attributable to air pollution. Ambient particulate matter emerged as the leading contributor to the global CRD burden, followed by household air pollution, whose impact is inversely related to the SDI level. The burden of air pollution on CRDs is most pronounced in low-middle SDI countries, with the exception of YLDs,
+followed by low SDI regions. While the impact of ambient pollution isincreasing over time, the influence of household air pollution is gradually declining. Geographically, the highest death rates due to air
 pollution were observed in Oceania, South Asia, and Sub-Saharan Africa,
 whereas the lowest rates occurred in North America, Europe, and
 Australasia. Health system capacity also plays a critical role:
