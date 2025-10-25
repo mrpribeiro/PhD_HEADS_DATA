@@ -109,7 +109,7 @@ comprehensive view of the impact of air pollution on CRDs.
 #install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork"))
 
 # Load necessary libraries
-library(tidyverse) #Já inclui dplyr + ggplot2 + forcat etc...
+library(tidyverse) #Includes dplyr + ggplot2 + forcat + tidyr ...
 library(scales)
 library(rnaturalearth)
 library(rnaturalearthdata)
@@ -119,12 +119,12 @@ library(viridis)
 library(patchwork)
 library(purrr)
 library(kableExtra)
-#Remove everything, clean environment
+# Clean environment
 rm(list = ls())
 ```
 
 ```{r}
-#Importar os dados
+#Import data
 gbd_data <- read.csv("IHME-GBD_2021_DATA-4835a3dc-1.csv")
 gbd_data2 <- read.csv("IHME-GBD_2021_DATA-c56a3848-1.csv")
 gbd_data3 <- read.csv("IHME-GBD_2021_DATA-1923af35-1.csv")
@@ -136,13 +136,13 @@ gbd_data8 <- read.csv("IHME-GBD_2021_DATA-dcf93c30-1.csv")
 gbd_data9 <- read.csv("IHME-GBD_2021_DATA-03b79351-1.csv")
 gbd_data10 <- read.csv("IHME-GBD_2021_DATA-ce582a59-1.csv")
 gbd_data11 <- read.csv("IHME-GBD_2021_DATA-382c4db5-1.csv")
-#Juntar as bases de dados
+#Merging the data
 gbd_total <- bind_rows(gbd_data, gbd_data2,gbd_data3,gbd_data4,gbd_data5,gbd_data6,
         gbd_data7,gbd_data8,gbd_data9,gbd_data10,gbd_data11)
 ```
 
 ```{r, results='hide'}
-#Sumário dos dados
+#Data summary
 glimpse(gbd_total)
 ```
 
@@ -150,11 +150,10 @@ glimpse(gbd_total)
 #library(dlookr)
 #gbd_total %>%
   #diagnose_paged_report(output_format = "html", output_file = "Diagn.html")
-#Paged dá para escolher pdf se for web não dá
 ```
 
 ```{r}
-# Converter colunas para factor
+# Convert the columns to factors
 gbd_total <- gbd_total %>%
         mutate(across(c(measure, location, sex, age, cause, rei, metric), as.factor))
 ```
@@ -164,7 +163,7 @@ names(gbd_total)
 ```
 
 ```{r,results='asis',tab.cap="List of variables"}
-# Devolve um vetor com todos os valores únicos (os nomes das categorias)
+# Returns a vector with all unique values (the category names)
 measure_classes <- unique(gbd_total$measure)
 location_classes <- unique(gbd_total$location)
 sex_classes <- unique(gbd_total$sex)
@@ -174,7 +173,7 @@ rei_classes <- unique(gbd_total$rei)
 metric_classes <- unique(gbd_total$metric)
 year_classes <- unique(gbd_total$year)
 
-# Criar uma lista com todas as variáveis (truncated)
+# Create a list with all variable names and their unique values
 classes_list <- list(
         measure = paste(measure_classes, collapse = ", "),
         location = paste(location_classes, collapse = ", "),
@@ -186,19 +185,19 @@ classes_list <- list(
         year = paste(year_classes, collapse = ", ")
 )
 
-# Criar data frame para tabela
+# Convert the list to a data frame for better presentation
 df_vars <- tibble::tibble(
         Variable = names(classes_list),
         Values = unlist(classes_list)
 )
 
-# Build the table step-by-step to avoid pipeline issues
+# Create a nicely formatted table using kableExtra
 tab <- kable(df_vars, format = "latex", booktabs = TRUE) %>% 
         kable_styling(latex_options = c("repeat_header", "striped", "scale_down")) %>%
         column_spec(1, width = "3cm")  %>% 
         column_spec(2, width = "12cm")
 
-# Output the table (in R Markdown, this will render as LaTeX)
+# Output the table
 tab
 ```
 
@@ -234,7 +233,7 @@ health_systems <- c("Advanced Health System",
 countries <- gbd_data10$location
 # Define country super regions
 country_regions <- gbd_data11$location
-geral_theme <- theme_minimal(base_size = 12) +
+general_theme <- theme_minimal(base_size = 12) +
   theme(
     legend.position = "none",
     strip.text = element_text(size = 12, face = "bold"),
@@ -260,14 +259,14 @@ df_types <- gbd_total %>%
                 age == "All ages",
                 sex == "Both"
         )
-# Ordenar tipos de poluição para apresentação consistente
+# Sort pollution types for consistent presentation
 df_types$rei <- factor(df_types$rei,
         levels = c("Household air pollution from solid fuels",
                 "Ambient particulate matter pollution",
                 "Nitrogen dioxide pollution",
                 "Ambient ozone pollution"
         ))
-# Nova paleta para tipos de poluição
+# New palette for pollution types
 pal_pollution <- c(
         "Ambient particulate matter pollution" = "#fdae61",
         "Household air pollution from solid fuels" =  "#b2182b" ,
@@ -300,7 +299,7 @@ df_types %>%
                 y = "Rate per 100,000",
                 caption = "Data source: GBD 2021"
         ) +
-        geral_theme
+        general_theme
 ```
 
 ## Impact on different Socio-demographic Index
@@ -320,7 +319,7 @@ df_SDI2 <- gbd_total %>%
                 sex == "Both"
         ) %>%
         select(measure, location, val, rei)
-# Calcular proporção de Household / (Ambient + Household)
+# Calculate Household / (Ambient + Household) ratio
 df_prop <- df_SDI2 %>%
         filter(rei %in% c("Ambient particulate matter pollution",
                 "Household air pollution from solid fuels")) %>%
@@ -330,6 +329,7 @@ df_prop <- df_SDI2 %>%
                 household = sum(val[rei == "Household air pollution from solid fuels"], na.rm = TRUE)
         ) %>%
         mutate(proportion_household = household / (ambient + household))
+
 # Make sure your health_systems are ordered in the plot
 df_prop <- df_prop %>%
         mutate(location = factor(location, levels = c(
@@ -339,6 +339,7 @@ df_prop <- df_prop %>%
                 "High-middle SDI",
                 "High SDI"
         )))
+
 # Ordered measure
 df_prop$measure <- factor(df_prop$measure,
         levels = c(
@@ -370,7 +371,7 @@ df_prop %>%
                 y = "",
                 caption = "Source: GBD 2021"
         ) +
-        geral_theme
+        general_theme
 ```
 
 ### Impact of Particulate Matter Pollution by SDI Classes (2021)
@@ -387,6 +388,7 @@ df_SDI_regions <- gbd_total %>%
                 sex == "Both"
         ) %>%
         select(measure, location, val, upper, lower)
+
 # Make sure SDI regions are ordered in the plot
 df_SDI_regions <- df_SDI_regions %>%
         mutate(location = factor(location, levels = c(
@@ -396,6 +398,7 @@ df_SDI_regions <- df_SDI_regions %>%
                 "High-middle SDI",
                 "High SDI"
         )))
+
 # Ordered measure
 df_SDI_regions$measure <- factor(df_SDI_regions$measure,levels = c(
         "Deaths",
@@ -403,6 +406,7 @@ df_SDI_regions$measure <- factor(df_SDI_regions$measure,levels = c(
         "YLLs (Years of Life Lost)",
         "YLDs (Years Lived with Disability)"
         ))
+
 # Plot
 df_SDI_regions %>% 
         ggplot(aes(x = location, y = val, fill = location)) +
@@ -445,7 +449,7 @@ df_SDI_regions %>%
 ## DALYs attributable to household vs ambient particulate air pollution worldwide (1990–2021)
 
 ```{r}
-# Preparar os dados
+# Prepare the data
 global_DALYS_year <- gbd_total %>%
         filter(
                 measure == "DALYs (Disability-Adjusted Life Years)",
@@ -786,7 +790,7 @@ vulnerable regions.
 ### Country ranking by all measures in 2021
 
 ```{r,warning=FALSE}
-# Filtrar linhas
+# Filter rows
 gbd_filtered <- gbd_total %>% 
         filter(
                 location %in% gbd_data11$location,
@@ -797,14 +801,14 @@ gbd_filtered <- gbd_total %>%
                 metric == "Rate",
                 year == "2021",
         )
-# Obter os top 10 locais com mais mortes
+# Get the top 10 places with the most deaths
 top_locations <- gbd_filtered %>%
   filter(measure == "Deaths") %>%
   arrange(desc(val)) %>%
   mutate(rank = row_number()) %>%
   slice(1:10) %>%
   pull(location)
-# Adicionar coluna de rank por medida e ordenar
+# Add rank column by measure and order
 gbd_filtered <- gbd_filtered %>%
         group_by(measure) %>%
         mutate(
@@ -813,7 +817,7 @@ gbd_filtered <- gbd_filtered %>%
                 location = fct_reorder(location, desc(val))
         ) %>%
         ungroup()
-# Fazer Barplot
+# Plot
 gbd_filtered %>%
         ggplot(aes(x = location, y = val,color = measure, group = measure)) +
         geom_line(
@@ -837,7 +841,7 @@ gbd_filtered %>%
                 color = "Measure",
                 caption = "Data source: GBD 2021"
         ) +
-        geral_theme +
+        general_theme +
         theme(
                 axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
         )
@@ -1092,7 +1096,7 @@ in long-term disease management and rehabilitation.
 ## Age and Gender
 
 ```{r}
-# Filtrar apenas linhas com metric == "Rate" e measure == "Deaths"
+# Filter rows
 gbd_filtered <- gbd_total %>% 
         filter(
                 measure == "Deaths" & 
@@ -1104,14 +1108,15 @@ gbd_filtered <- gbd_total %>%
                 metric == "Rate" & 
                 year == "2021"
         )
-# Fazer Barplot
+
+# Plot
 gbd_filtered %>%
-        ggplot(aes(x = age, y = val, fill = sex)) +  # Adicionado fill = sex para agrupamento
+        ggplot(aes(x = age, y = val, fill = sex)) +
         geom_bar(
                 stat = "identity", 
                 width = 0.6,
                 alpha = 0.5,
-        ) +  # position_dodge para barras lado a lado
+        ) +
         labs(
                 title = "Impact of Type of Air Pollution by Age and Gender (2021)",
                 x = "Age", 
@@ -1119,7 +1124,7 @@ gbd_filtered %>%
                 fill = "Gender",
                 caption = "Data Source: GBD 2021"
         ) +
-        geral_theme
+        general_theme
 ```
 
 # Discussion
