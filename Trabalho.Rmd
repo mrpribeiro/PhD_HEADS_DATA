@@ -584,7 +584,7 @@ global_DALYS_year <- gbd_total %>%
                 measure == "DALYs (Disability-Adjusted Life Years)",
                 location == "Global",
                 rei %in% c("Household air pollution from solid fuels","Ambient particulate matter pollution"),
-                metric == "Number",
+                metric == "Rate",
                 cause == "Chronic respiratory diseases",
                 age == "All ages",
                 sex == "Both"
@@ -609,8 +609,8 @@ global_DALYS_year %>%
         geom_point(size = 2) +
         labs(
                 title = "DALYs attributable to particulate air pollution worldwide (1990–2021)",
-                x = "Year",
-                y = "DALYs (Number)",
+                x = NULL,
+                y = "DALYs (Rate per 100k)",
                 color = NULL,
                 fill = NULL,
                 caption = "Data Source: Global Burden of Disease 2021"
