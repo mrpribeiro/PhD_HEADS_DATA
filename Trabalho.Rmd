@@ -514,7 +514,8 @@ df_SDI_regions <- gbd_total %>%
                 metric == "Rate",
                 cause == "Chronic respiratory diseases",
                 age == "Age-standardized",
-                sex == "Both"
+                sex == "Both",
+                year == "2021"
         ) %>%
         select(measure, location, val, upper, lower)
 
