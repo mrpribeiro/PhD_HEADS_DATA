@@ -266,6 +266,8 @@ general_theme <- theme_minimal(base_size = 12) +
 ```
 ## Impact of CRD 
 
+From an estimated 8 million deaths globally attributable to air pollution, CRD accounted for 22.1% of all deaths, highlighting their substantial contribution to the global mortality burden. When examining morbidity, the YLDs from CRDs represent 29.4% of all air pollution–related YLDs, emphasizing that CRDs impose a disproportionately large burden on quality of life. Within CRDs, COPD accounts for 97% of YLDs, illustrating that COPD is the primary driver of chronic respiratory health losses attributable to air pollution.
+
 ```{r, fig.cap = "Burden of air pollution on CRD (2021)"}
 
 gbd_YLDSglobal_all <- gbd_total %>%
@@ -373,6 +375,8 @@ sankey
 
 ## Impact of different types of polluents
 
+Air pollution–related CRD burden varies markedly by pollutant type. Ambient particulate matter (224 DALYs per 100,000) and household air pollution (197 DALYs per 100,000) contribute the largest share of disease burden, whereas ozone (111 DALYs per 100,000) and nitrogen dioxide (2 DALYs per 100,000) contribute substantially less. The predominance of particulate matter aligns with its established pathogenic role in airway inflammation, impaired lung function, and exacerbation of chronic respiratory conditions. The substantial burden from household air pollution reflects ongoing exposure in low-income settings where solid fuels are widely used, emphasizing disparities in environmental health risks.
+
 ```{r, fig.cap = "Global Impact of Different Types of Air Pollution on CRD (2021)"}
 df_types <- gbd_total %>%
         filter(
@@ -433,6 +437,8 @@ df_types %>%
 ## Impact on different Socio-demographic Index
 
 ### Percentage of Household Air Pollution contribution on particulate matter pollution
+
+Bar plots depicting deaths, DALYs, YLDs, and years of life lost (YLLs) attributed to household air pollution as a proportion of all particulate matter–related outcomes reveal striking socioeconomic disparities. In low SDI countries, household air pollution accounts for approximately 80% of particulate matter–related CRD burden, whereas in high SDI countries, this proportion approaches zero. This gradient reflects differences in fuel use, housing conditions, and energy access, highlighting that interventions to reduce indoor air pollution remain critical in low- and low-middle SDI regions, whereas ambient sources dominate in more developed settings.
 
 ```{r}
 # Filter and summarise for Rate:
@@ -504,6 +510,8 @@ df_prop %>%
 ```
 
 ### Impact of Particulate Matter Pollution by SDI Classes (2021)
+
+When considering the absolute burden of CRDs attributable to air pollution by SDI, a clear gradient emerges. For deaths, DALYs, and YLLs, the ranking from highest to lowest burden is low-middle SDI, low SDI, middle SDI, high-middle SDI, and high SDI, reflecting the combined effects of environmental exposures. In low-middle SDI countries, the burden may be amplified by a synergistic impact of persistently high household air pollution and rising ambient pollution from industrial and urban sources in contexts with relatively weak environmental regulation. Notably, for YLDs, there is a proportional increase with SDI, likely reflecting early-life exposure to household air pollution combined with longer life expectancy in low-SDI countries, which increases the duration of living with chronic respiratory disability.
 
 ```{r}
 # Filter and summarise for Rate:
@@ -577,6 +585,8 @@ df_SDI_regions %>%
 
 ## DALYs attributable to household vs ambient particulate air pollution worldwide (1990–2021)
 
+Analysis the rate of DALYs from household and ambient particulate pollution between 1990 and 2021 reveals divergent temporal trends. DALYs attributable to household air pollution have steadily decreased, reflecting global transitions away from solid fuel use and improvements in household energy access. Conversely, DALYs attributable to ambient particulate matter have increased, driven by industrialization, urbanization, and traffic-related emissions in many regions. These opposing trends highlight the evolving nature of environmental risk and the need for policy interventions that target both indoor and outdoor air quality simultaneously.
+
 ```{r}
 # Prepare the data
 global_DALYS_year <- gbd_total %>%
@@ -610,7 +620,7 @@ global_DALYS_year %>%
         labs(
                 title = "DALYs attributable to particulate air pollution worldwide (1990–2021)",
                 x = NULL,
-                y = "DALYs (Rate per 100k)",
+                y = "DALYs (Rate per 100,000)",
                 color = NULL,
                 fill = NULL,
                 caption = "Data Source: Global Burden of Disease 2021"
