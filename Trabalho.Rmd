@@ -1,5 +1,5 @@
 ---
-title: "Exploring the impact of air pollution on chronic respiratory diseases using Global Burden of Disease data"
+title: "**Exploring the impact of air pollution on chronic respiratory diseases using Global Burden of Disease data**"
 authors: "João Silva, Marco Pereira, Mariana Ribeiro"
 date: "`r Sys.Date()`"
 output:
@@ -10,6 +10,8 @@ output:
     citation_package: default
 bibliography: referencias.bib
 csl: apa7.csl
+header-includes:
+  - \usepackage[table]{xcolor}
 editor_options: 
   markdown: 
     wrap: 72
@@ -21,41 +23,25 @@ knitr::opts_chunk$set(echo = FALSE,message=FALSE, warning=FALSE, cache=TRUE, fig
 
 # Abstract
 
-This study investigates the global impact of air pollution on chronic
-respiratory diseases (CRDs) using data from the Global Burden of Disease
-2021. Through exploratory data analysis, we examine the contribution of
-different types of air pollutants (ambient particulate matter, household
-air pollution, ozone, and nitrogen dioxide) to CRD-related mortality and
-disability. In 2021, CRDs accounted for 22.1% of all deaths and 29.4% of
-all years lived with disability attributable to air pollution. The
-burden is disproportionately higher in countries with low and low-middle
-socio-demographic index, and in regions with limited or minimal health
-system capacity. While mortality rates have declined over time, the
-chronic health impact remains significant, with a shift toward long-term
-disability. The findings highlight the urgent need for targeted
-interventions and policy measures to mitigate air pollution and reduce
-its health burden, especially in vulnerable populations.
+**Background:**
+Air pollution is a leading environmental determinant of morbidity and mortality worldwide and remains a major risk factor in the causation of chronic respiratory diseases (CRDs), including chronic pulmonary obstructive disease (COPD) and asthma. While substantial evidence links air pollutants to impaired respiratory health, global disparities persist across regions, socioeconomic and health system settings, and population groups. Comprehensive assessments integrating long-term temporal and spatial patterns are essential to guide policy and interventions aimed at reducing exposure and improving respiratory health outcomes.
 
-
-# Abstract2
-
-Background:
-Air pollution is a leading environmental determinant of morbidity and mortality worldwide and remains a major risk factor in the causation of chronic respiratory diseases (CRDs) - chronic pulmonary obstructive disease (COPD) and asthma. While substantial evidence links air pollutants to impaired respiratory health, global disparities persist across regions, socioeconomic and health system settings, and population groups. Comprehensive assessments integrating long-term temporal and spatial patterns are essential to guide policy and interventions aimed at reducing exposure and improving respiratory health outcomes.
-
-Objectives:
+**Objectives:**
 To review and synthesize global evidence on the associations between air pollution and CRDs using data from the Global Burden of Disease (GBD) 1990–2021 dataset, examining differences across types of air pollution,  Socio-Demographic Index (SDI) categories,  health system typologies, world regions, sex, and age groups, and to evaluate temporal trends over the past three decades.
 
-Methods:
+**Methods:**
 An exploratory data analysis (EDA) of GBD-derived estimates and supporting epidemiological literature was conducted. Disability-adjusted life years (DALYs), years lived with disability (YLDs), years of live lost (YLLs) and deaths of CRDs attributable to major air pollution exposures (particulate matter, nitrogen dioxide and ambient ozone pollution) were extracted and analyzed. Comparative analyses explored variations by disease, gender, age, countries, SDI, and health system characteristics. Temporal trends from 1990 to 2021 were evaluated to identify global progress and persistent inequalities.
 
-Results:
-Globally, CRDs attributable to air pollution account for 22.1% of all deaths and 29.4% of YLDs linked to this risk factor, with COPD contributing the largest share of the burden. Particulate matter pollution represents the leading contributor to the burden of air pollution–related CRDs, with a marked increase in ambient particulate pollution and a decline in household air pollution since 1990. Countries with low- and middle-Sociodemographic Index (SDI) experience the highest impact in terms of deaths and disability-adjusted life years (DALYs), while low-SDI countries remain disproportionately affected by household air pollution and YLDs. Interestingly, nations with minimal health system development do not exhibit the worst reported outcomes for CRDs attributable to air pollution—likely reflecting underdiagnosis and underreporting rather than true lower disease burden. Sex- and age-specific analyses demonstrated higher vulnerability among males and older adults, consistent with biological susceptibility and exposure patterns.
+**Results:**
+Globally, CRDs attributable to air pollution account for 22.1% of all deaths and 29.4% of YLDs linked to this risk factor, with COPD contributing the largest share of the burden. Particulate matter pollution represents the leading contributor to the burden of air pollution–related CRDs, with a marked increase in ambient particulate pollution and a decline in household air pollution since 1990. Countries with low- and middle-Sociodemographic Index (SDI) experience the highest impact in terms of deaths and disability-adjusted life years (DALYs), while low-SDI countries remain disproportionately affected by household air pollution and YLDs. Interestingly, nations with minimal health system development do not exhibit the worst reported outcomes for CRDs attributable to air pollution, which likely reflects underdiagnosis and underreporting rather than true lower disease burden. Sex- and age-specific analyses demonstrated higher vulnerability among males and older adults, consistent with biological susceptibility and exposure patterns.
 
-Conclusions:
+**Conclusions:**
 Substantial global reductions in air pollution–related CRD burden have been achieved since 1990; however, these gains are unevenly distributed. Persistent disparities by region, sociodemographic status, and pollution type highlight the need for integrated interventions combining environmental regulation, public health policies, and health system strengthening. The GBD framework provides a valuable platform for monitoring and addressing inequities in respiratory health outcomes associated with air pollution.
 
-Keywords:
+**Keywords:**
 Air pollution; Chronic respiratory diseases; Global Burden of Disease; Environmental epidemiology; Health disparities; Temporal trends.
+
+\newpage
 
 # Introduction
 
@@ -126,7 +112,7 @@ classes, health system types, sex, and age groups, providing a
 comprehensive view of the impact of air pollution on CRDs.
 
 ```{r}
-#install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork"))
+#install.packages(c("tidyverse", "scales", "rnaturalearth", "rnaturalearthdata", "sf", "countrycode", "viridis","patchwork","kableExtra","networkD3","webshot2"))
 
 # Load necessary libraries
 library(tidyverse) #Includes dplyr + ggplot2 + forcat + tidyr ...
@@ -137,8 +123,9 @@ library(sf)
 library(countrycode)
 library(viridis)
 library(patchwork)
-library(purrr)
 library(kableExtra)
+library(networkD3)
+library(webshot2)
 # Clean environment
 rm(list = ls())
 ```
@@ -182,45 +169,6 @@ gbd_total <- gbd_total %>%
 names(gbd_total)
 ```
 
-```{r,results='asis',tab.cap="List of variables"}
-# Returns a vector with all unique values (the category names)
-measure_classes <- unique(gbd_total$measure)
-location_classes <- unique(gbd_total$location)
-sex_classes <- unique(gbd_total$sex)
-age_classes <- unique(gbd_total$age)
-cause_classes <- unique(gbd_total$cause)
-rei_classes <- unique(gbd_total$rei)
-metric_classes <- unique(gbd_total$metric)
-year_classes <- unique(gbd_total$year)
-
-# Create a list with all variable names and their unique values
-classes_list <- list(
-        measure = paste(measure_classes, collapse = ", "),
-        location = paste(location_classes, collapse = ", "),
-        sex = paste(sex_classes, collapse = ", "),
-        age = paste(age_classes, collapse = ", "),
-        cause = paste(cause_classes, collapse = ", "),
-        rei = paste(rei_classes, collapse = ", "),
-        metric = paste(metric_classes, collapse = ", "),
-        year = paste(year_classes, collapse = ", ")
-)
-
-# Convert the list to a data frame for better presentation
-df_vars <- tibble::tibble(
-        Variable = names(classes_list),
-        Values = unlist(classes_list)
-)
-
-# Create a nicely formatted table using kableExtra
-tab <- kable(df_vars, format = "latex", booktabs = TRUE) %>% 
-        kable_styling(latex_options = c("repeat_header", "striped", "scale_down")) %>%
-        column_spec(1, width = "3cm")  %>% 
-        column_spec(2, width = "12cm")
-
-# Output the table
-tab
-```
-
 # Results
 
 ```{r}
@@ -262,11 +210,11 @@ general_theme <- theme_minimal(base_size = 12) +
     axis.text = element_text(size = 10)
   )
 ```
-## Impact of CRD 
+## Impact of chronic respiratory diseases 
 
 From an estimated 8 million deaths globally attributable to air pollution, CRD accounted for 22.1% of all deaths, highlighting their substantial contribution to the global mortality burden. When examining morbidity, the YLDs from CRDs represent 29.4% of all air pollution–related YLDs, emphasizing that CRDs impose a disproportionately large burden on quality of life. Within CRDs, COPD accounts for 97% of YLDs, illustrating that COPD is the primary driver of chronic respiratory health losses attributable to air pollution.
 
-```{r, fig.cap = "Burden of air pollution on CRD (2021)"}
+```{r, results='hide', echo=FALSE, fig.cap = "Burden of air pollution on CRD (2021)"}
 
 gbd_YLDSglobal_all <- gbd_total %>%
         filter(
@@ -324,7 +272,7 @@ yld_crd <- gbd_YLDSglobal$val
 yld_total_causas <- gbd_YLDSglobal_all$val
 yld_outro <- yld_total_causas - yld_crd
 
-yld_crd/yld_total_causas
+#yld_crd/yld_total_causas
 
 # Nodes
 nodes <- data.frame(
@@ -344,8 +292,8 @@ links <- data.frame(
 )
 
 # Structure
-str(nodes)
-str(links)
+#str(nodes)
+#str(links)
 
 # Colors
 colour_scale <- 'd3.scaleOrdinal()
@@ -367,9 +315,16 @@ sankey <- sankeyNetwork(
   height = 300   # altura (em pixels)
 )
 
-#Show
-sankey
+# Save HTML widget
+htmlwidgets::saveWidget(sankey, "sankey.html")
+
+# Take screenshot
+webshot2::webshot("sankey.html", "sankey.png", vwidth = 800, vheight = 600)
 ```
+
+
+
+
 
 ## Impact of different types of polluents
 
@@ -426,19 +381,20 @@ df_types %>%
         labs(
                 title = "Global Impact of Different Types of Air Pollution on CRD (2021)",
                 x = "",
-                y = "Rate per 100,000",
-                caption = "Data source: GBD 2021"
+                y = "DALYs Rate per 100,000",
+                caption = "Data Source: Global Burden of Disease 2021"
         ) +
-        general_theme
+        general_theme + 
+        theme(strip.text = element_blank())
 ```
 
 ## Impact on different Socio-demographic Index
 
 ### Percentage of Household Air Pollution contribution on particulate matter pollution
 
-Bar plots depicting deaths, DALYs, YLDs, and years of life lost (YLLs) attributed to household air pollution as a proportion of all particulate matter–related outcomes reveal striking socioeconomic disparities. In low SDI countries, household air pollution accounts for approximately 80% of particulate matter–related CRD burden, whereas in high SDI countries, this proportion approaches zero. This gradient reflects differences in fuel use, housing conditions, and energy access, highlighting that interventions to reduce indoor air pollution remain critical in low- and low-middle SDI regions, whereas ambient sources dominate in more developed settings.
+Bar plots depicting deaths, DALYs, YLDs, and YLLs attributed to household air pollution as a proportion of all particulate matter–related outcomes reveal striking socioeconomic disparities. In low SDI countries, household air pollution accounts for approximately 80% of particulate matter–related CRD burden, whereas in high SDI countries, this proportion approaches zero. This gradient reflects differences in fuel use, housing conditions, and energy access, highlighting that interventions to reduce indoor air pollution remain critical in low- and low-middle SDI regions, whereas ambient sources dominate in more developed settings.
 
-```{r}
+```{r, fig.cap = "Health metrics showing the proportion of household air pollution relative to total particulate matter pollution attributable to CRD, stratified by SDI classes (2021)."}
 # Filter and summarise for Rate:
 df_SDI2 <- gbd_total %>%
         filter(
@@ -507,11 +463,11 @@ df_prop %>%
         general_theme
 ```
 
-### Impact of Particulate Matter Pollution by SDI Classes (2021)
+### Impact of Particulate Matter Pollution by SDI Classes in 2021
 
 When considering the absolute burden of CRDs attributable to air pollution by SDI, a clear gradient emerges. For deaths, DALYs, and YLLs, the ranking from highest to lowest burden is low-middle SDI, low SDI, middle SDI, high-middle SDI, and high SDI, reflecting the combined effects of environmental exposures. In low-middle SDI countries, the burden may be amplified by a synergistic impact of persistently high household air pollution and rising ambient pollution from industrial and urban sources in contexts with relatively weak environmental regulation. Notably, for YLDs, there is a proportional increase with SDI, likely reflecting early-life exposure to household air pollution combined with longer life expectancy in low-SDI countries, which increases the duration of living with chronic respiratory disability.
 
-```{r}
+```{r, fig.cap= "Health metrics showing the inpact of particulate matter pollution attributable to chronic respiratory diseases, stratified by SDI classes (2021)."}
 # Filter and summarise for Rate:
 df_SDI_regions <- gbd_total %>%
         filter(
@@ -566,26 +522,17 @@ df_SDI_regions %>%
                 title = "Impact of Particulate Matter Pollution by SDI Classes (2021)",
                 x = "",
                 y = "Rate per 100,000",
-                caption = "Data Source: GBD 2021"
+                caption = "Data Source: Global Burden of Disease 2021"
         ) +
-        theme_minimal(base_size = 13) +
-        theme(
-                legend.position = "none",
-                strip.text = element_text(face = "bold", size = 20),
-                plot.title = element_text(face = "bold", size = 24),
-                plot.subtitle = element_text(size = 16),
-                axis.title.x = element_text(size = 18, face = "bold"),  # y-axis title (since coord_flip)
-                axis.title.y = element_text(size = 18, face = "bold"),  # x-axis title
-                axis.text.x  = element_text(size = 14),                 # tick labels (x-axis)
-                axis.text.y  = element_text(size = 14)                  # tick labels (y-axis)
-        )
+        theme_minimal() +
+        theme(legend.position = "none")
 ```
 
-## DALYs attributable to household vs ambient particulate air pollution worldwide (1990–2021)
+## DALYs attributable to household versus ambient particulate air pollution worldwide from 1990 to 2021
 
 Analysis the rate of DALYs from household and ambient particulate pollution between 1990 and 2021 reveals divergent temporal trends. DALYs attributable to household air pollution have steadily decreased, reflecting global transitions away from solid fuel use and improvements in household energy access. Conversely, DALYs attributable to ambient particulate matter have increased, driven by industrialization, urbanization, and traffic-related emissions in many regions. These opposing trends highlight the evolving nature of environmental risk and the need for policy interventions that target both indoor and outdoor air quality simultaneously.
 
-```{r}
+```{r, fig.cap= "Temporal trend of DALYs caused by CRD attributable to household air pollution and ambient particulate matter pollution from 1990 to 2021."}
 # Prepare the data
 global_DALYS_year <- gbd_total %>%
         filter(
@@ -624,14 +571,7 @@ global_DALYS_year %>%
                 caption = "Data Source: Global Burden of Disease 2021"
         ) +
         theme_minimal() +
-        theme(
-                axis.title.x = element_text(size = 18),
-                axis.title.y = element_text(size = 18),
-                plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
-                plot.subtitle = element_text(size = 14, hjust = 0.5),
-                legend.title = element_text(size = 18),
-                legend.text = element_text(size = 18)
-        )
+        theme(legend.position = "bottom")
 ```
 
 ## Global health impact of air pollution on chronic respiratory diseases from 1990 to 2021
@@ -787,7 +727,7 @@ the country with the highest mortality rate in 2021, followed by Papua
 New Guinea, India, Bangladesh, and Myanmar, confirming that South and
 East Asia remain the global hotspots for CRDs related to air pollution.
 
-```{r deathscountry-tops, echo = FALSE, fig.cap = "The top ten countries with the highest and lowest age-standardized death rates per 100,000 population from air pollution–related chronic respiratory diseases, 1990 vs 2021 ."}
+```{r deathscountry-tops, echo = FALSE, fig.cap = "The top ten countries with the highest and lowest age-standardized death rates per 100,000 population from air pollution–related chronic respiratory diseases, 1990 versus 2021 ."}
 
 # Top 10 highest death rate countries
 top10_high_2021 <- df_deaths_clean_2021 %>%
@@ -876,7 +816,7 @@ p_low <- ggplot(top10_low_table, aes(x = reorder(location, -val), y = val, color
 combined_lolipops <- p_high + p_low +
   plot_layout(guides = "collect") +
   plot_annotation(
-    title = "Global Extremes in Deaths from Air Pollution–Related Chronic Respiratory Diseases (1990 vs 2021)",
+    title = "Global Extremes in Deaths from Air Pollution–Related Chronic Respiratory Diseases (1990 versus 2021)",
     caption = "Data source: Global Burden of Disease 2021"
   ) &
   theme(
@@ -965,7 +905,7 @@ gbd_filtered %>%
                 x = "Regions (ordered by decreasing number of deaths)",
                 y = "Measure (rate)",
                 color = "Measure",
-                caption = "Data source: GBD 2021"
+                caption = "Data Source: Global Burden of Disease 2021"
         ) +
         general_theme +
         theme(
@@ -979,7 +919,7 @@ persistent disparities across regions.
 
 ## Impact of air pollution on chronic respiratory disease by health system type in 2021
 
-As shown in Figure \@ref(fig:health-system),the burden of CRDs caused by
+As shown in Figure \@ref(fig:health-system), the burden of CRDs caused by
 air pollution varies depending on the strength of a country’s health
 system. As expected, countries with strong, advanced health systems (in
 green) show the lowest bruden rates. However, the pattern across weaker
@@ -1192,7 +1132,7 @@ around 700 to below 400 per 100,000, indicating fewer premature deaths
 over time. In contrast, YLDs remained relatively stable throughout the
 period, with minor fluctuations and a slight increase in recent years.
 
-## Age and Gender
+## Age- and Sex-Specific Mortality Associated with Air Pollution
 
 ```{r}
 # Filter rows
@@ -1217,13 +1157,14 @@ gbd_filtered %>%
                 alpha = 0.5,
         ) +
         labs(
-                title = "Impact of Type of Air Pollution by Age and Gender (2021)",
+                title = "Age- and Sex-Specific Death Rates Attributable to Air Pollution (2021)",
                 x = "Age", 
-                y = "Deaths (rate per 100,000)", 
+                y = "Deaths (Rate per 100,000)", 
                 fill = "Gender",
-                caption = "Data Source: GBD 2021"
+                caption = "Data Source: Global Burden of Disease 2021"
         ) +
-        general_theme
+        theme_minimal() +
+        theme(legend.position = "right")
 ```
 
 # Discussion
@@ -1247,8 +1188,8 @@ They argue that changes in exposure modelling, such as refining
 PM$_{2.5}$ concentration estimates and adjusting exposure–response
 curves, significantly alter burden estimates across different
 geographical contexts. Our research employs analogous methodological
-enhancements—utilizing updated exposure-response functions and
-stratifying by pollutant type—and yields remarkably consistent estimates
+enhancements, using updated exposure-response functions and
+stratifying by pollutant type, and yields remarkably consistent estimates
 of CRD burden, particularly in nations with inadequate monitoring
 infrastructure. This parallel strengthens confidence in our approach and
 supports the WHO’s revised burden metrics. Finally, the recent Lancet
@@ -1256,11 +1197,11 @@ study by Bennitt et al. (2025) provides a comprehensive evaluation of
 household air pollution (HAP) trends and burdens from 1990 to 2021,
 reporting that in 2021 approximately 2.67 billion people (33.8% of the
 global population) were exposed to HAP at mean PM$_{2.5}$ concentrations
-of 84.2 µg/m³. They also estimate 111 million attributable DALYs,
+of 84.2 µg/m³. They also estimate 111 million attributable DALYs,
 constituting 3.9% of the global DALY total [@bennitt_global_2025].
 
 Beyond confirming these global patterns, our results reveal persistent
-geographical inequalities in the burden of air-pollution-related CRDs.
+geographical inequalities in the burden of air pollution-related CRDs.
 Regions such as South Asia, Oceania, and Sub-Saharan Africa continue to
 exhibit disproportionately high rates of deaths and DALYs, whereas North
 America, Western Europe, and Australasia display much lower rates. These
@@ -1327,7 +1268,7 @@ emerged as the leading contributor to the global CRD burden, followed by
 household air pollution, whose impact is inversely related to the SDI
 level. The burden of air pollution on CRDs is most pronounced in
 low-middle SDI countries, with the exception of YLDs, followed by low
-SDI regions. While the impact of ambient pollution isincreasing over
+SDI regions. While the impact of ambient pollution is increasing over
 time, the influence of household air pollution is gradually declining.
 Geographically, the highest death rates due to air pollution were
 observed in Oceania, South Asia, and Sub-Saharan Africa, whereas the
@@ -1335,7 +1276,7 @@ lowest rates occurred in North America, Europe, and Australasia. Health
 system capacity also plays a critical role: countries with limited or
 minimal health systems experience a significantly higher burden of CRD
 due to air pollution. Although progress has been made in reducing
-mortality, the chronic health impact remains substantial — with a
+mortality, the chronic health impact remains substantial, with a
 noticeable shift from mortality to long-term disability and illness.
 Finally, the mortality rate from air pollution-related CRDs is directly
 proportional to age and consistently higher in men than in women,
@@ -1387,3 +1328,42 @@ IHME-GBD_2021_DATA-ce582a59-1.csv\
 standardized + Sex (Both)\
 <https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/0afce2e9094f891f22453111c6986ffb>
 IHME-GBD_2021_DATA-382c4db5-1.csv
+
+```{r,results='asis',tab.cap="List of variables"}
+# Returns a vector with all unique values (the category names)
+measure_classes <- unique(gbd_total$measure)
+location_classes <- unique(gbd_total$location)
+sex_classes <- unique(gbd_total$sex)
+age_classes <- unique(gbd_total$age)
+cause_classes <- unique(gbd_total$cause)
+rei_classes <- unique(gbd_total$rei)
+metric_classes <- unique(gbd_total$metric)
+year_classes <- unique(gbd_total$year)
+
+# Create a list with all variable names and their unique values
+classes_list <- list(
+        measure = paste(measure_classes, collapse = ", "),
+        location = paste(location_classes, collapse = ", "),
+        sex = paste(sex_classes, collapse = ", "),
+        age = paste(age_classes, collapse = ", "),
+        cause = paste(cause_classes, collapse = ", "),
+        rei = paste(rei_classes, collapse = ", "),
+        metric = paste(metric_classes, collapse = ", "),
+        year = paste(year_classes, collapse = ", ")
+)
+
+# Convert the list to a data frame for better presentation
+df_vars <- tibble::tibble(
+        Variable = names(classes_list),
+        Values = unlist(classes_list)
+)
+
+# Create a nicely formatted table using kableExtra
+tab <- kable(df_vars, format = "latex", booktabs = TRUE) %>% 
+        kable_styling(latex_options = c("repeat_header", "striped", "scale_down")) %>%
+        column_spec(1, width = "3cm")  %>% 
+        column_spec(2, width = "12cm")
+
+# Output the table
+tab
+```
